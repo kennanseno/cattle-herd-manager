@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const { parse } = require('csv-parse/sync')
 
 function splitCsvLine(line) {
   const result = []
@@ -21,6 +22,25 @@ function splitCsvLine(line) {
 
 function readLines(fp) {
   return fs.readFileSync(fp, 'utf8').split(/\r?\n/)
+}
+
+function getFinanceCategory(type, description) {
+  const normalized = description.toLowerCase()
+  if (type === 'income') {
+    if (normalized.includes('milk')) return 'Milk Sale'
+    if (normalized.includes('stud')) return 'Stud Fee'
+    if (normalized.includes('subsidy')) return 'Government Subsidy'
+    return 'Cattle Sale'
+  }
+
+  if (/salary|payroll|labor|wages|worker/.test(normalized)) return 'Labor'
+  if (/fencing|electric fence|cage|tank|tractor|chopper|engine|bunker|channel|equipment|ai tank|cage|truck|trailer/.test(normalized)) return 'Equipment'
+  if (/deworm|ivermectin|vitamin|injection|medicine|ai|preg check|pregnancy|vaccin|worm|vet|veterinarian|drench/.test(normalized)) return 'Veterinary'
+  if (/silage|napier|feed|mineral|salt|hay|grass|grazing|fodder|maize|grain|corn|ration/.test(normalized)) return 'Feed'
+  if (/transport|freight|delivery|truck|haul|shipping|fuel|diesel/.test(normalized)) return 'Transport'
+  if (/water|electric|utilities|power|internet|phone|gas|sewer/.test(normalized)) return 'Utilities'
+  if (/breeding|ai|bull|heifer|calf|cow|sire|dam/.test(normalized)) return 'Breeding'
+  return 'Other Expense'
 }
 
 function appendRowsCsv(targetPath, header, rows) {
@@ -66,23 +86,37 @@ function importHerd() {
 function importFinances() {
   const src = path.join('data','initial-record','Cattle Operation - Expenses - Expenses.csv')
   if (!fs.existsSync(src)) { console.log('Finances source not found:', src); return {added:0} }
-  const lines = readLines(src).filter(Boolean)
-  if (lines.length < 2) return {added:0}
+  const content = fs.readFileSync(src, 'utf8')
+  const rows = parse(content, { columns: false, skip_empty_lines: true, relax_quotes: true, trim: true })
   const entries = []
-  for (let i=2;i<lines.length;i++) {
-    const cols = splitCsvLine(lines[i])
-    if (!cols) continue
-    if (cols[0] && cols[0].trim()) {
-      const date = cols[0].trim()
-      const desc = cols[1] ? cols[1].trim() : ''
-      const val = cols[2] ? cols[2].trim().replace(/[^0-9.-]/g,'') : ''
-      if (date && val) entries.push({date,type:'expense',category:desc,amount:val,description:desc,notes:'',relatedTagNumber:''})
+
+  for (const row of rows.slice(2)) {
+    const [expenseDate, expenseDesc, expenseValue, , incomeDate, incomeDesc, incomeValue] = row
+    if (expenseDate && expenseValue) {
+      const description = expenseDesc ? expenseDesc.toString().trim() : ''
+      const amount = expenseValue.toString().replace(/[^0-9.-]/g, '')
+      entries.push({
+        date: expenseDate,
+        type: 'expense',
+        category: getFinanceCategory('expense', description),
+        amount,
+        description,
+        notes: '',
+        relatedTagNumber: '',
+      })
     }
-    if (cols[4] && cols[4].trim()) {
-      const date = cols[4].trim()
-      const desc = cols[5] ? cols[5].trim() : ''
-      const val = cols[6] ? cols[6].trim().replace(/[^0-9.-]/g,'') : ''
-      if (date && val) entries.push({date,type:'income',category:'sales',amount:val,description:desc,notes:'',relatedTagNumber:''})
+    if (incomeDate && incomeValue) {
+      const description = incomeDesc ? incomeDesc.toString().trim() : ''
+      const amount = incomeValue.toString().replace(/[^0-9.-]/g, '')
+      entries.push({
+        date: incomeDate,
+        type: 'income',
+        category: getFinanceCategory('income', description),
+        amount,
+        description,
+        notes: '',
+        relatedTagNumber: '',
+      })
     }
   }
 
