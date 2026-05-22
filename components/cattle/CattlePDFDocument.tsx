@@ -43,12 +43,13 @@ function ageStr(dob: string) {
   return `${getAgeInYears(dob)} years`
 }
 
-function TreeNodePDF({ cattle, label }: { cattle: Cattle | undefined; tag?: string; label?: string }) {
+function TreeNodePDF({ cattle, tag, label }: { cattle: Cattle | undefined; tag?: string; label?: string }) {
   if (!cattle) return (
     <View style={styles.treeNodeWrap}>
       {label && <Text style={styles.treeLabel}>{label}</Text>}
       <View style={[styles.treeNode, { borderStyle: "dashed" }]}>
-        <Text style={styles.treeNodeSub}>Unknown</Text>
+        {tag ? <Text style={styles.treeNodeTag}>{tag}</Text> : <Text style={styles.treeNodeSub}>Unknown</Text>}
+        {tag && <Text style={styles.treeNodeSub}>Not in record</Text>}
       </View>
     </View>
   )
@@ -127,11 +128,11 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
 
           {/* Grandparent row */}
           <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 4 }}>
-            <TreeNodePDF cattle={grandsire_s} label="Paternal Grandsire" />
-            <TreeNodePDF cattle={granddam_s} label="Paternal Granddam" />
+            <TreeNodePDF cattle={grandsire_s} tag={sire?.sireTagNumber} label="Paternal Grandsire" />
+            <TreeNodePDF cattle={granddam_s} tag={sire?.damTagNumber} label="Paternal Granddam" />
             <View style={{ width: 16 }} />
-            <TreeNodePDF cattle={grandsire_d} label="Maternal Grandsire" />
-            <TreeNodePDF cattle={granddam_d} label="Maternal Granddam" />
+            <TreeNodePDF cattle={grandsire_d} tag={dam?.sireTagNumber} label="Maternal Grandsire" />
+            <TreeNodePDF cattle={granddam_d} tag={dam?.damTagNumber} label="Maternal Granddam" />
           </View>
 
           {/* Connector */}
@@ -143,9 +144,9 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
 
           {/* Parents */}
           <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 4 }}>
-            <TreeNodePDF cattle={sire} label="Sire (Father)" />
+            <TreeNodePDF cattle={sire} tag={cattle.sireTagNumber} label="Sire" />
             <View style={{ width: 32 }} />
-            <TreeNodePDF cattle={dam} label="Dam (Mother)" />
+            <TreeNodePDF cattle={dam} tag={cattle.damTagNumber} label="Dam" />
           </View>
 
           {/* Connector to subject */}
