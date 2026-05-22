@@ -67,18 +67,19 @@ date,type,category,amount,description,notes,relatedTagNumber,id,createdAt,update
 2026-01-01,expense,Labor,12000,January Salary,,,d5fcbfe2-ad4b-4b1f-8d28-69118d056fcf,,
 2026-01-15,expense,Veterinary,3500,Preg check/deworm/vitamins,,,24c8901c-f9aa-4d86-b04f-2027100fbc3c,,
 2026-01-24,expense,Feed,11900,Napier harvest(jan 19-24),,,c5ded965-728d-429b-ae93-b302c9d82567,,
-2026-01-26,expense,Veterinary,15000,Harvest Maize - Farbeco,,,4717ee0a-f90f-4650-8f7f-57657893a7bd,,
+2026-01-26,expense,Feed,15000,Harvest Maize - Farbeco,,,4717ee0a-f90f-4650-8f7f-57657893a7bd,,2026-05-22T19:14:20.076Z
 2026-02-01,expense,Labor,12000,February Salary,,,7502b9e3-045d-4fd7-9c23-dac0baee162b,,
 2026-02-02,expense,Equipment,2850,"Mineral Block, Electric fence rod, etc.",,,fe0e327c-4e17-4c59-a80b-7922a8db8130,,
-2026-02-03,expense,Feed,4500,San Roque Napier planting + daro,,,67de3474-0440-4f4d-8326-dae1fa9a21bb,,
-2026-02-04,expense,Other Expense,5000,Lantud Land clearing,,,6fb118db-34da-4b58-86f4-0b76b717a48a,,
-2026-02-08,expense,Veterinary,15000,Harvest Maize - Laguyan,,,a4f1c625-8236-4fb0-9489-86dbfb30ceb1,,
+2026-02-03,expense,Labor,4500,San Roque Napier planting + daro,,,67de3474-0440-4f4d-8326-dae1fa9a21bb,,2026-05-22T19:14:06.845Z
+2026-02-04,expense,Labor,5000,Lantud Land clearing,,,6fb118db-34da-4b58-86f4-0b76b717a48a,,2026-05-22T19:14:00.768Z
+2026-02-08,expense,Feed,15000,Harvest Maize - Laguyan,,,a4f1c625-8236-4fb0-9489-86dbfb30ceb1,,2026-05-22T19:13:54.821Z
 2026-03-01,expense,Labor,12000,March Salary,,,8049e171-2903-4de1-ba96-9b825cebf00c,,
 2026-03-12,expense,Feed,10000,Napier Harvest,,,c12aa342-791f-4ded-9919-a35ac60e8958,,
 2026-03-13,expense,Veterinary,3500,Preg check/deworm/vitamins,,,0827a940-8c12-43a8-aac9-978f11e5f9de,,
 2026-03-14,expense,Breeding,130000,1 Bernales Heifer,,,3223d75b-09dc-49e0-9e05-27b11d360110,,
-2026-03-15,expense,Other Expense,50000,"Lantud Land clearing,tanom, etc.",,,26fff2d3-7677-40e1-ac39-78ecb10f5190,,
+2026-03-15,expense,Labor,50000,"Lantud Land clearing,tanom, etc.",,,26fff2d3-7677-40e1-ac39-78ecb10f5190,,2026-05-22T19:13:37.621Z
 2026-04-01,expense,Labor,12000,April Salary,,,9661f89c-f3af-46bf-b3bc-9009877947af,,
 2026-03-17,expense,Equipment,75000,Elf Cattle Cage,,,fa616ca2-fb52-439c-bf67-7a9102c83fb3,,
-2026-03-18,expense,Other Expense,50000,"Dagumbaan lampas, koral, etc.",,,15a4cccf-e62c-468e-8e8d-bb9dd4e2bcde,,
+2026-03-18,expense,Labor,50000,"Dagumbaan lampas, koral, etc.",,,15a4cccf-e62c-468e-8e8d-bb9dd4e2bcde,,2026-05-22T19:13:28.968Z
 2026-05-18,expense,Labor,12000,May Salary,,,417a2341-aff5-4666-b140-bba14b3998d3,,
+2026-05-07,expense,Veterinary,2000,"Vaccination, Vitamin Supplement, Deworming, Checkup – All Cattle",,,a93455ee-86de-4e24-9586-36a64c7bd914,2026-05-22T19:01:28.548Z,2026-05-22T19:01:28.548Z

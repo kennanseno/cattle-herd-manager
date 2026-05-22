@@ -1,6 +1,6 @@
 tagNumber,dateOfBirth,sex,breed,sireTagNumber,damTagNumber,nickname,birthWeight,weaningWeight,status,notes,imagePath,createdAt,updatedAt,photos
 PBF 782,2023-01-03,male,Brahman,Mr. PBF P 2318,Lady PBF 377,Tambok,,,active,,,,2026-05-22T18:49:47.037Z,
-2,2022-06-01,female,Brahman,N/A,N/A,white,,,active,,,,2026-05-22T18:49:54.398Z,
+2,2022-06-01,female,Brahman,N/A,N/A,White,,,active,,,,2026-05-22T19:05:17.421Z,
 3,2022-06-01,female,Brahman,N/A,N/A,,,,active,Original DOB string: Acquired 09/23 @ est. 15months,,,,
 4,2022-06-01,female,Brahman,N/A,N/A,,,,active,Original DOB string: Acquired 09/23 @ est. 15months,,,,
 5,2023-09-01,female,Brahman,N/A,N/A,,,,active,Original DOB string: Acquired 03/24 @ est.  6months,,,,
@@ -12,4 +12,5 @@ PBF 782,2023-01-03,male,Brahman,Mr. PBF P 2318,Lady PBF 377,Tambok,,,active,,,,2
 PBF 884,2024-02-10,female,Brahman,Mr PBF R2190,Lady PBF 427,,,,active,,,,,
 PBF 894,2024-02-13,female,Brahman,Mr PBF R2190,Lady PBF 617,,,,active,,,,,
 PBF 8184,2024-03-28,female,Brahman,Mr PBF R2190,Lady PBF 8310,,,,active,,,,,
-7,2026-05-10,male,Brahman,PBF 782,3,yo,,,active,,,,2026-05-22T18:49:39.086Z,
+7,2026-05-10,male,Brahman,PBF 782,3,Yo,,,active,,,,2026-05-22T18:59:51.058Z,
+PBF 615,2025-01-27,female,Brahman,Mr PBF Q 2190,Lady PBF 8280,,,,active,,,2026-05-22T18:57:12.042Z,2026-05-22T18:57:12.042Z,

@@ -58,7 +58,7 @@ function TreeNodePDF({ cattle, label }: { cattle: Cattle | undefined; tag?: stri
       <View style={styles.treeNode}>
         <Text style={styles.treeNodeTag}>{cattle.tagNumber}</Text>
         {cattle.nickname ? <Text style={styles.treeNodeSub}>{cattle.nickname}</Text> : null}
-        <Text style={styles.treeNodeSub}>{formatDate(cattle.dateOfBirth)}</Text>
+        <Text style={styles.treeNodeSub}>{"DOB: " + formatDate(cattle.dateOfBirth)}</Text>
         <Text style={styles.treeNodeSub}>{cattle.sex === "male" ? "Bull (M)" : "Cow (F)"}</Text>
       </View>
     </View>
@@ -143,9 +143,9 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
 
           {/* Parents */}
           <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 4 }}>
-            <TreeNodePDF cattle={sire} label="Sire (Father)" />
+            <TreeNodePDF cattle={sire} label="Sire" />
             <View style={{ width: 32 }} />
-            <TreeNodePDF cattle={dam} label="Dam (Mother)" />
+            <TreeNodePDF cattle={dam} label="Dam" />
           </View>
 
           {/* Connector to subject */}
@@ -159,7 +159,7 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
             <View style={styles.treeNodeRoot}>
               <Text style={styles.treeNodeTag}>{cattle.tagNumber}</Text>
               {cattle.nickname ? <Text style={styles.treeNodeSub}>{cattle.nickname}</Text> : null}
-              <Text style={styles.treeNodeSub}>{formatDate(cattle.dateOfBirth)}</Text>
+              <Text style={styles.treeNodeSub}>{"DOB: " + formatDate(cattle.dateOfBirth)}</Text>
             </View>
           </View>
         </View>
