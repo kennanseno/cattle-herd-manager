@@ -190,7 +190,7 @@ export function HealthTable({ records, allCattle }: HealthTableProps) {
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                  No health records found.
+                  {records.length === 0 ? "No health records yet." : "No health records match your search."}
                 </TableCell>
               </TableRow>
             ) : (

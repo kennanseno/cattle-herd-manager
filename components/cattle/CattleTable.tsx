@@ -199,7 +199,7 @@ export function CattleTable({ cattle }: CattleTableProps) {
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="h-32 text-center text-muted-foreground">
-                  No cattle found.
+                  {cattle.length === 0 ? "No cattle yet." : "No cattle match your search."}
                 </TableCell>
               </TableRow>
             ) : (

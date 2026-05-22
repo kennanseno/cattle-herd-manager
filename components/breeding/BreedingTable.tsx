@@ -170,7 +170,7 @@ export function BreedingTable({ records, allCattle }: BreedingTableProps) {
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
-                  No breeding records found.
+                  {records.length === 0 ? "No breeding records yet." : "No breeding records match your search."}
                 </TableCell>
               </TableRow>
             ) : (

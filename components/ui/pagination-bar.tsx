@@ -20,7 +20,7 @@ export function PaginationBar({ page, pageSize, total, onPage, label = "items" }
     <div className="flex items-center justify-between text-sm text-muted-foreground">
       <span>
         {total === 0
-          ? `No ${label} found`
+          ? null
           : `Showing ${from}–${to} of ${total} ${label}`}
       </span>
       {totalPages > 1 && (
