@@ -82,6 +82,12 @@ export function updateBreeding(id: string, data: Partial<BreedingRecord>): Breed
   if (data.breedDate && data.breedDate !== all[idx].breedDate) {
     updated.possibleCalvingDate = calcCalvingDate(data.breedDate);
   }
+  // If actual calving date is provided/changed, derive the breedDate from it
+  if (data.actualCalvingDate && data.actualCalvingDate !== all[idx].actualCalvingDate) {
+    updated.breedDate = calcBreedDate(data.actualCalvingDate);
+    // when actual calving date is known, update possibleCalvingDate to match actual
+    updated.possibleCalvingDate = data.actualCalvingDate;
+  }
   all[idx] = updated;
   writeCSV('breeding.csv', all);
   return updated;

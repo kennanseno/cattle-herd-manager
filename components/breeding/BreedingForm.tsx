@@ -19,7 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import type { Cattle, BreedingRecord } from "@/types"
-import { calcCalvingDate, formatDate } from "@/lib/utils"
+import { calcCalvingDate, calcBreedDate, formatDate } from "@/lib/utils"
 
 const schema = z.object({
   cowTagNumber: z.string().min(1, "Cow is required"),
@@ -29,7 +29,8 @@ const schema = z.object({
   status: z.enum(["pending", "calved", "failed"]).default("pending"),
   calfTagNumber: z.string().optional().default(""),
   notes: z.string().optional().default(""),
-}).superRefine((data, ctx) => {
+    actualCalvingDate: z.string().optional().default(""),
+  }).superRefine((data, ctx) => {
   if (data.breedDateTo && data.breedDate && data.breedDateTo < data.breedDate) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -80,6 +81,7 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
         sireTagNumber: record?.sireTagNumber || "",
         breedDate: record?.breedDate || "",
         breedDateTo: record?.breedDateTo || "",
+        actualCalvingDate: record?.actualCalvingDate || "",
         status: record?.status || "pending",
         calfTagNumber: record?.calfTagNumber || "",
         notes: record?.notes || "",
@@ -89,6 +91,8 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
 
   const breedDate = watch("breedDate")
   const breedDateTo = watch("breedDateTo")
+  const status = watch("status")
+  const actualCalvingDate = watch("actualCalvingDate")
   const calvingFrom = breedDate ? calcCalvingDate(breedDate) : null
   const calvingTo = rangeMode && breedDateTo ? calcCalvingDate(breedDateTo) : null
 
@@ -253,6 +257,30 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
               <Input id="calfTagNumber" {...register("calfTagNumber")} placeholder="e.g. B010" />
             </div>
           </div>
+
+          {isEditing && status === 'calved' && (
+            <div className="space-y-2">
+              <Label htmlFor="actualCalvingDate">Actual Calving Date</Label>
+              <Input
+                id="actualCalvingDate"
+                type="date"
+                {...register("actualCalvingDate")}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setValue("actualCalvingDate", val)
+                  if (val) {
+                    // Recalculate breedDate from actual calving date
+                    try {
+                      const calculated = calcBreedDate(val)
+                      setValue("breedDate", calculated)
+                    } catch {
+                      // ignore parse errors
+                    }
+                  }
+                }}
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
