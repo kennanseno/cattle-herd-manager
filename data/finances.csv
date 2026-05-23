@@ -83,3 +83,4 @@ date,type,category,amount,description,notes,relatedTagNumber,id,createdAt,update
 2026-03-18,expense,Labor,50000,"Dagumbaan lampas, koral, etc.",,,15a4cccf-e62c-468e-8e8d-bb9dd4e2bcde,,2026-05-22T19:13:28.968Z
 2026-05-18,expense,Labor,12000,May Salary,,,417a2341-aff5-4666-b140-bba14b3998d3,,
 2026-05-07,expense,Veterinary,2000,"Vaccination, Vitamin Supplement, Deworming, Checkup – All Cattle",,,a93455ee-86de-4e24-9586-36a64c7bd914,2026-05-22T19:01:28.548Z,2026-05-22T19:01:28.548Z
+2026-05-23,expense,Feed,9000,San roque harvest,,,f29b3a0b-2160-4513-b4f2-d5ed8f8b049a,2026-05-22T23:23:05.165Z,2026-05-22T23:23:05.165Z

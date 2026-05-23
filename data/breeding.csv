@@ -1,2 +1,3 @@
-cowTagNumber,sireTagNumber,breedDate,actualCalvingDate,calfTagNumber,notes,status,id,possibleCalvingDate,createdAt,updatedAt
-Lady PBF 8280,Mr PBF Q 2190,2024-04-19,2025-01-27,PBF 615,Auto-created from calf PBF 615,calved,b094cbe0-3f78-4026-a832-3376c97e3463,2025-01-27,2026-05-22T18:57:12.044Z,2026-05-22T18:57:12.044Z
+cowTagNumber,sireTagNumber,breedDate,actualCalvingDate,calfTagNumber,notes,status,id,possibleCalvingDate,createdAt,updatedAt,breedDateTo
+Lady PBF 8280,Mr PBF Q 2190,2024-04-19,2025-01-27,PBF 615,Auto-created from calf PBF 615,calved,b094cbe0-3f78-4026-a832-3376c97e3463,2025-01-27,2026-05-22T18:57:12.044Z,2026-05-22T18:57:12.044Z,
+4,PBF 782,2025-08-01,,,,pending,bd5b5a32-b1d4-4c2e-9e92-fad2444131a6,2026-05-11,2026-05-22T20:34:18.391Z,2026-05-22T20:34:18.391Z,2025-10-31
