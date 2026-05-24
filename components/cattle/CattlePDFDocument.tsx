@@ -5,36 +5,36 @@ import type { Cattle, FarmSettings } from "@/types"
 import { formatDate, getAgeInYears, getAgeInMonths } from "@/lib/utils"
 
 const styles = StyleSheet.create({
-  page: { padding: 40, fontFamily: "Helvetica", fontSize: 10, color: "#1a1a1a" },
-  header: { borderBottom: "2pt solid #16a34a", paddingBottom: 12, marginBottom: 16 },
-  farmName: { fontSize: 18, fontFamily: "Helvetica-Bold", color: "#14532d" },
-  farmDetails: { fontSize: 9, color: "#555", marginTop: 2 },
-  title: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 4 },
-  subtitle: { fontSize: 10, color: "#555" },
+  page: { padding: 40, fontFamily: "Times-Roman", fontSize: 10, color: "#1a1a1a" },
+  header: { borderBottom: "2pt solid #1f472f", paddingBottom: 12, marginBottom: 16 },
+  farmName: { fontSize: 20, fontFamily: "Times-Bold", color: "#123824" },
+  farmDetails: { fontSize: 10, fontFamily: "Times-Roman", color: "#555", marginTop: 2 },
+  title: { fontSize: 14, fontFamily: "Times-Bold", marginBottom: 4 },
+  subtitle: { fontSize: 10, fontFamily: "Times-Roman", color: "#555" },
   section: { marginBottom: 14 },
-  sectionTitle: { fontSize: 11, fontFamily: "Helvetica-Bold", color: "#14532d", borderBottom: "1pt solid #e5e7eb", paddingBottom: 3, marginBottom: 8 },
+  sectionTitle: { fontSize: 11, fontFamily: "Times-Bold", color: "#123824", borderBottom: "1pt solid #e5e7eb", paddingBottom: 3, marginBottom: 8 },
   row: { flexDirection: "row", marginBottom: 4 },
-  label: { width: 150, color: "#555" },
-  value: { flex: 1, fontFamily: "Helvetica-Bold" },
+  label: { width: 150, fontFamily: "Times-Roman", color: "#555" },
+  value: { flex: 1, fontFamily: "Times-Bold" },
   // Family tree
   treeRow: { flexDirection: "row", justifyContent: "center", marginBottom: 10 },
   treeNodeWrap: { flexDirection: "column", alignItems: "center", marginHorizontal: 8 },
   treeNode: { border: "1pt solid #d1d5db", borderRadius: 4, padding: "4 8", width: 90, alignItems: "center" },
   treeNodeRoot: { border: "2pt solid #16a34a", borderRadius: 4, padding: "4 8", width: 90, alignItems: "center", backgroundColor: "#f0fdf4" },
-  treeNodeTag: { fontFamily: "Helvetica-Bold", fontSize: 9 },
-  treeNodeSub: { fontSize: 7, color: "#888", marginTop: 1 },
-  treeLabel: { fontSize: 8, color: "#555", marginBottom: 3 },
+  treeNodeTag: { fontFamily: "Times-Bold", fontSize: 9 },
+  treeNodeSub: { fontSize: 7, fontFamily: "Times-Italic", color: "#888", marginTop: 1 },
+  treeLabel: { fontSize: 8, fontFamily: "Times-Roman", color: "#555", marginBottom: 3 },
   connector: { width: 1, height: 12, backgroundColor: "#d1d5db", alignSelf: "center" },
   // Footer
   footer: { position: "absolute", bottom: 40, left: 40, right: 40 },
   footerLine: { paddingTop: 8 },
   footerSig: { flexDirection: "row", justifyContent: "space-between", marginTop: 24 },
   sigLine: { width: 200, borderTop: "1pt solid #333", paddingTop: 4, fontSize: 9 },
-  certificateTitle: { fontSize: 26, fontFamily: "Helvetica-Bold", textAlign: "center", marginBottom: 6, color: "#0b3b2e", textTransform: "uppercase", letterSpacing: 1 },
-  certificateSubtitle: { fontSize: 11, textAlign: "left", color: "#2c5f49", marginBottom: 10, lineHeight: "200%" },
+  certificateTitle: { fontSize: 28, fontFamily: "Times-Bold", textAlign: "center", marginBottom: 6, color: "#0b3b2e", textTransform: "uppercase", letterSpacing: 1 },
+  certificateSubtitle: { fontSize: 11, fontFamily: "Times-Italic", textAlign: "left", color: "#2c5f49", marginBottom: 10, lineHeight: 1.8 },
   certContent: { padding: 28, zIndex: 1, backgroundColor: "#ffffff" },
-  certLabel: { fontSize: 11, color: "#444", width: 140 },
-  certValue: { fontSize: 12, fontFamily: "Helvetica-Bold", flex: 1 },
+  certLabel: { fontSize: 11, fontFamily: "Times-Roman", color: "#444", width: 140 },
+  certValue: { fontSize: 12, fontFamily: "Times-Bold", flex: 1 },
   logo: { width: 72, height: 72, objectFit: 'cover', borderRadius: 4 },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 })
@@ -115,7 +115,14 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
         {/* Certificate Header */}
         <View style={styles.certContent}>
           <Text style={styles.certificateTitle}>Certificate of Ownership</Text>
-          <Text style={styles.certificateSubtitle}>{"This certifies that the following animal is produced by " + settings.farmName + " and is presently owned by   _________________________________."}</Text>
+          <Text style={styles.certificateSubtitle}>
+                <Text>This certifies that the following animal is produced by </Text>
+                <Text style={{ fontWeight: "bold" }}>{settings.farmName || "Cattle Farm"}</Text>
+                <Text> and is presently owned by   _________________________________.</Text>
+          </Text>
+          
+
+          
 
           {/* <View style={{ marginBottom: 15 }}>
             <Text style={{ fontSize: 9, fontStyle: "italic", color: "#333" }}>{"This certificate is issued for whatever legal porpuse it may serve."}</Text>
