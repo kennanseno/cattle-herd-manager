@@ -1,7 +1,7 @@
 import {
   getAllCattle, getAllBreeding, getAllFinances, getSettings,
 } from "@/lib/data"
-import { isCalf, daysUntil, formatDate, formatPHP, getAgeInYears, getAgeInMonths } from "@/lib/utils"
+import { isCalf, daysUntil, formatDate, formatPHP, getAgeInYears, getAgeInMonths, calcCalvingDate } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -107,6 +107,9 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {upcomingCalvings.map((r) => {
                   const cow = allCattle.find((c) => c.tagNumber === r.cowTagNumber)
+                  const calvingFrom = calcCalvingDate(r.breedDate)
+                  const calvingTo = r.breedDateTo ? calcCalvingDate(r.breedDateTo) : null
+                  const calvingDisplay = calvingTo ? `${formatDate(calvingFrom)} to ${formatDate(calvingTo)}` : formatDate(r.possibleCalvingDate)
                   return (
                     <div key={r.id} className="flex items-center justify-between">
                       <div>
@@ -121,7 +124,10 @@ export default function DashboardPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{formatDate(r.possibleCalvingDate)}</span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm text-muted-foreground">{calvingDisplay}</span>
+                          {calvingTo && <span className="text-xs text-muted-foreground">Est. range</span>}
+                        </div>
                         <Badge variant={r.daysLeft <= 14 ? "warning" : r.daysLeft < 0 ? "destructive" : "outline"}>
                           {r.daysLeft < 0 ? `${Math.abs(r.daysLeft)}d overdue` : `${r.daysLeft}d`}
                         </Badge>
