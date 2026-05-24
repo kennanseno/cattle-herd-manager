@@ -1,5 +1,5 @@
 import {
-  Document, Page, Text, View, StyleSheet, pdf,
+  Document, Page, Text, View, StyleSheet, pdf, Image,
 } from "@react-pdf/renderer"
 import type { Cattle, FarmSettings } from "@/types"
 import { formatDate, getAgeInYears, getAgeInMonths } from "@/lib/utils"
@@ -27,9 +27,16 @@ const styles = StyleSheet.create({
   connector: { width: 1, height: 12, backgroundColor: "#d1d5db", alignSelf: "center" },
   // Footer
   footer: { position: "absolute", bottom: 40, left: 40, right: 40 },
-  footerLine: { borderTop: "1pt solid #d1d5db", paddingTop: 8 },
+  footerLine: { paddingTop: 8 },
   footerSig: { flexDirection: "row", justifyContent: "space-between", marginTop: 24 },
   sigLine: { width: 200, borderTop: "1pt solid #333", paddingTop: 4, fontSize: 9 },
+  certificateTitle: { fontSize: 26, fontFamily: "Helvetica-Bold", textAlign: "center", marginBottom: 6, color: "#0b3b2e", textTransform: "uppercase", letterSpacing: 1 },
+  certificateSubtitle: { fontSize: 11, textAlign: "left", color: "#2c5f49", marginBottom: 10, lineHeight: "200%" },
+  certContent: { padding: 28, zIndex: 1, backgroundColor: "#ffffff" },
+  certLabel: { fontSize: 11, color: "#444", width: 140 },
+  certValue: { fontSize: 12, fontFamily: "Helvetica-Bold", flex: 1 },
+  logo: { width: 72, height: 72, objectFit: 'cover', borderRadius: 4 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 })
 
 function lookupCattle(tag: string | undefined, allCattle: Cattle[]): Cattle | undefined {
@@ -84,42 +91,57 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* Certificate (styled box) */}
         {/* Farm Header */}
-        <View style={styles.header}>
-          <Text style={styles.farmName}>{settings.farmName || "Cattle Farm"}</Text>
-          {settings.address ? <Text style={styles.farmDetails}>{settings.address}</Text> : null}
-          {settings.phone || settings.email ? (
-            <Text style={styles.farmDetails}>
-              {[settings.phone, settings.email].filter(Boolean).join(" · ")}
-            </Text>
-          ) : null}
-        </View>
-
-        {/* Title */}
-        <View style={styles.section}>
-          <Text style={styles.title}>Cattle Record</Text>
-          <Text style={styles.subtitle}>Generated: {formatDate(new Date().toISOString().slice(0, 10))}</Text>
-        </View>
-
-        {/* Basic Info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Animal Details</Text>
-          {[
-            ["Tag Number", cattle.tagNumber],
-            ["Nickname", cattle.nickname || "—"],
-            ["Date of Birth", formatDate(cattle.dateOfBirth)],
-            ["Age", ageLabel],
-            ["Sex", cattle.sex === "male" ? "Male (Bull/Steer)" : "Female (Cow/Heifer)"],
-            ["Breed", cattle.breed],
-            ["Status", cattle.status],
-            ["Birth Weight", cattle.birthWeight ? `${cattle.birthWeight} kg` : "—"],
-            ["Weaning Weight", cattle.weaningWeight ? `${cattle.weaningWeight} kg` : "—"],
-          ].map(([label, value]) => (
-            <View key={label} style={styles.row}>
-              <Text style={styles.label}>{label}</Text>
-              <Text style={styles.value}>{value}</Text>
+        <View style={[styles.header, styles.headerRow]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {settings.logoPath ? (
+              <Image
+                src={`/api/images/${settings.logoPath.split('/').pop()}`}
+                style={styles.logo}
+              />
+            ) : null}
+            <View style={{ marginLeft: settings.logoPath ? 10 : 0 }}>
+              <Text style={styles.farmName}>{settings.farmName || "Cattle Farm"}</Text>
+              {settings.address ? <Text style={styles.farmDetails}>{settings.address}</Text> : null}
+              {settings.phone || settings.email ? (
+                <Text style={styles.farmDetails}> {[settings.phone, settings.email].filter(Boolean).join(" · ")} </Text>
+                ) : null}
             </View>
-          ))}
+          </View>
+
+        </View>
+
+        {/* Certificate Header */}
+        <View style={styles.certContent}>
+          <Text style={styles.certificateTitle}>Certificate of Ownership</Text>
+          <Text style={styles.certificateSubtitle}>{"This certifies that the following animal is produced by " + settings.farmName + " and is presently owned by   _________________________________."}</Text>
+
+          {/* <View style={{ marginBottom: 15 }}>
+            <Text style={{ fontSize: 9, fontStyle: "italic", color: "#333" }}>{"This certificate is issued for whatever legal porpuse it may serve."}</Text>
+            <Text style={{ fontSize: 9, fontStyle: "italic", color: "#333" }}>{ "Given on this day, " + formatDate(new Date().toISOString().slice(0, 10)) + "." }</Text>
+          </View> */}
+
+          {/* Basic Info laid out like a certificate */}
+          <View style={{ marginBottom: 12 }}>
+            {[
+              ["Tag Number", cattle.tagNumber],
+              ["Nickname", cattle.nickname || "—"],
+              ["Breed", cattle.breed || "—"],
+              ["Sex", cattle.sex === "male" ? "Male" : "Female"],
+              ["Date of Birth", formatDate(cattle.dateOfBirth)],
+              ["Age", ageLabel],
+              ["Sire", cattle.sireTagNumber || "—"],
+              ["Dam", cattle.damTagNumber || "—"],
+            ].map(([label, value]) => (
+              <View key={String(label)} style={{ flexDirection: "row", marginBottom: 6 }}>
+                <Text style={styles.certLabel}>{label}</Text>
+                <Text style={styles.certValue}>{value}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Ownership signature moved to footer */}
         </View>
 
         {/* Pedigree / Family Tree */}
@@ -165,21 +187,22 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
           </View>
         </View>
 
-        {/* Footer */}
+        {/* Footer with single signature block */}
         <View style={styles.footer} fixed>
           <View style={styles.footerLine}>
-            <View style={styles.footerSig}>
-              <View>
-                <View style={styles.sigLine}>
-                  <Text>{settings.ownerName || "Owner"}</Text>
-                  <Text style={{ color: "#888" }}>Farm Owner / Signature</Text>
+            <Text style={{ fontSize: 9, marginBottom: 25, lineHeight: 1.4, fontStyle: "italic", color: "#333" }}>
+              <Text>{"This certificate is issued for whatever legal purpose it may serve."}</Text>
+              <Text>{"\n"}</Text>
+              <Text>{"Given on this day, "}</Text>
+              <Text style={{ fontWeight: "bold" }}>{formatDate(new Date().toISOString().slice(0, 10))}</Text>
+              <Text>{"."}</Text>
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
+              <View style={{ width: 200, alignItems: 'flex-start', marginRight: 20 }}>
+                <View style={{ width: '100%', borderTop: '1pt solid #333', paddingTop: 6 }}>
+                  <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}>{settings.ownerName || 'Owner'}</Text>
                 </View>
-              </View>
-              <View>
-                <View style={[styles.sigLine, { width: 150 }]}>
-                  <Text>{settings.farmName || ""}</Text>
-                  <Text style={{ color: "#888" }}>Farm Name</Text>
-                </View>
+                <Text style={{ fontSize: 9, color: '#888', marginTop: 4 }}>Registered Owner</Text>
               </View>
             </View>
           </View>
