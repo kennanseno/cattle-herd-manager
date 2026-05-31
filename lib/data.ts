@@ -6,7 +6,7 @@ import type {
 import { v4 as uuidv4 } from 'uuid';
 
 const defaultSettings: FarmSettings = {
-  farmName: '', ownerName: '', address: '', phone: '', email: '', logoPath: '',
+  farmName: '', ownerName: '', address: '', phone: '', email: '', logoPath: '', website: '',
 };
 
 // ─── CATTLE ────────────────────────────────────────────────────────────────
