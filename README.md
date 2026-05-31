@@ -88,3 +88,78 @@ If these files do not exist yet, the app may create them or expect them to be pr
 ## Deploy
 
 This app can be deployed to any environment that supports Next.js. Use standard Next.js deployment workflows and ensure the local CSV/data directory is available if persistent storage is required.
+
+## Desktop (Electron) distribution
+
+A lightweight Electron wrapper is included to produce a desktop app that runs the built Next.js site inside a Chromium window.
+
+### Development
+
+Run the Next dev server and open Electron:
+
+```bash
+# in one terminal
+npm run dev
+
+# in another terminal
+npm run electron:dev
+```
+
+### Production (run Electron with built app)
+
+```bash
+npm run electron:start
+```
+
+### Building installers with electron-forge
+
+Build distributable installers for macOS and Windows:
+
+```bash
+# Make all platform installers (macOS DMG, Windows NSIS/MSI, and zips)
+npm run electron:make
+
+# Make macOS DMG only
+npm run electron:make:macos
+
+# Make Windows installer only
+npm run electron:make:windows
+```
+
+Installers and build outputs are created in the `out/` directory.
+
+#### macOS
+- `.dmg` file for distribution (drag-and-drop installer)
+
+#### Windows
+- `.exe` installer with Squirrel (auto-updates capable)
+- Uninstaller included
+
+### Notes
+- `electron:dev` expects the dev server on `http://localhost:9999` (same as `npm run dev`).
+- `electron:start` runs `npm run build` then starts Electron which will spawn `npm run start` and load the app.
+- To build installers, you must be on the target platform (e.g., build macOS installers on macOS). Alternatively, use CI/CD (GitHub Actions, etc.) for cross-platform builds.
+- The forge config in `package.json` specifies DMG (macOS) and Squirrel (Windows) makers by default.
+
+### Automated builds with GitHub Actions
+
+A GitHub Actions workflow (`.github/workflows/build-installers.yml`) is configured to automatically build installers on:
+- Push to `main` or `develop` branches (artifacts uploaded to workflow run)
+- Push of any git tag matching `v*` (creates a GitHub Release with installers attached)
+
+**How to trigger a release:**
+
+1. Commit your changes and push to `main`
+2. Create and push a version tag:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+3. GitHub Actions will build macOS DMG and Windows EXE installers
+4. A GitHub Release will be created and the installers attached
+5. Users can download installers directly from the Releases page
+
+**Manual workflow trigger:**
+
+You can also trigger a build manually from the GitHub Actions tab in the repository without a tag (useful for testing).
+
