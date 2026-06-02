@@ -87,3 +87,5 @@ date,type,category,amount,description,notes,relatedTagNumber,id,createdAt,update
 2026-05-22,expense,Feed,16000,"Molasses, 4 sacks Copra meal",,,5e64eae4-548b-45fc-800b-78b137ae3e68,2026-05-27T06:15:11.150Z,2026-05-27T06:15:11.150Z
 2026-05-27,expense,Equipment,2500,"Mineral block, fence fixed, halter",,,2eac644a-92a3-45ea-b2fe-0758b4e6f37f,2026-05-27T06:16:09.891Z,2026-05-27T06:16:09.891Z
 2026-04-01,expense,Equipment,80000,4 silage bunker,,,945a0fb9-8735-4ee0-add1-5f5cc5b7a5a6,2026-05-30T19:43:04.131Z,2026-05-30T19:43:04.131Z
+2026-06-02,expense,Veterinary,1000,Treatment – 4,antibiotic due to deep cut in middle of udders due to rapid expanding udders as close to calving,4,53e62796-29ef-4f15-96e5-e1481b84be8b,2026-06-02T16:56:17.669Z,2026-06-02T16:56:17.669Z
+2026-06-02,expense,Feed,30500,Spend grain,,,13fdf160-4940-40b2-a0de-50c83d1b283f,2026-06-02T16:56:54.629Z,2026-06-02T16:56:54.629Z
