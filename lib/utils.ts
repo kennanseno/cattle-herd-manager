@@ -37,7 +37,7 @@ export function isCalf(dob: string): boolean {
 export function formatDate(dateStr: string): string {
   if (!dateStr) return '—';
   try {
-    return format(parseISO(dateStr), 'MMM d, yyyy');
+    return format(parseISO(dateStr), 'MMMM dd, yyyy');
   } catch {
     return dateStr;
   }
