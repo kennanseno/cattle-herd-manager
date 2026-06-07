@@ -153,7 +153,7 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
 
         {/* Pedigree / Family Tree */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pedigree (up to Grandparents)</Text>
+          <Text style={styles.sectionTitle}>Pedigree (up to grandparents)</Text>
 
           {/* Grandparent row */}
           <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 4 }}>
@@ -209,7 +209,7 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
                 <View style={{ width: '100%', borderTop: '1pt solid #333', paddingTop: 6 }}>
                   <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}>{settings.ownerName || 'Owner'}</Text>
                 </View>
-                <Text style={{ fontSize: 9, color: '#888', marginTop: 4 }}>Registered Owner</Text>
+                <Text style={{ fontSize: 9, color: '#888', marginTop: 4 }}>Farm Owner { "- " + settings.farmName || ""}</Text>
               </View>
             </View>
           </View>
