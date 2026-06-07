@@ -54,7 +54,7 @@ jobs:
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
         with:
-          name: cattle-herd-manager-macos
+          name: installer-macos
           path: out/make/*.dmg
           if-no-files-found: ignore
 
@@ -62,7 +62,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: cattle-herd-manager-windows
+          name: installer-windows
           path: out/make/**/*.exe
           if-no-files-found: ignore
 
@@ -78,14 +78,14 @@ jobs:
       - name: Download macOS installer
         uses: actions/download-artifact@v4
         with:
-          name: cattle-herd-manager-macos
+          name: installer-macos
           path: ./installers/macos
         continue-on-error: true
 
       - name: Download Windows installer
         uses: actions/download-artifact@v4
         with:
-          name: cattle-herd-manager-windows
+          name: installer-windows
           path: ./installers/windows
         continue-on-error: true
 
