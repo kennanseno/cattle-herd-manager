@@ -1,17 +1,11 @@
 {
   "name": "cattle-herd-manager",
-  "version": "0.9.0",
+  "version": "0.1.0",
   "private": true,
-  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev -p 9999",
     "build": "next build",
     "start": "next start -p 9999",
-    "electron:dev": "NODE_ENV=development electron .",
-    "electron:start": "npm run build && NODE_ENV=production electron .",
-    "electron:make": "npm run build && electron-forge make",
-    "electron:make:macos": "npm run build && electron-forge make --platform darwin",
-    "electron:make:windows": "npm run build && electron-forge make --platform win32",
     "lint": "eslint",
     "pm2:start": "pm2 start \"npm run dev\" --name cattle-herd && pm2 save",
     "pm2:stop": "pm2 stop cattle-herd",
@@ -58,11 +52,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "electron": "^26.2.2",
-    "@electron-forge/cli": "^7.5.0",
-    "@electron-forge/maker-dmg": "^7.5.0",
-    "@electron-forge/maker-squirrel": "^7.5.0",
-    "@electron-forge/maker-zip": "^7.5.0",
     "@tailwindcss/postcss": "^4",
     "@types/csv-parse": "^1.1.12",
     "@types/node": "^20",
@@ -74,34 +63,5 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "config": {
-    "forge": {
-      "packagerConfig": {
-        "name": "Cattle Herd Manager",
-        "icon": "./public/cattle-icon",
-        "asar": true,
-        "prune": true
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "CattleHerdManager",
-            "exe": "Cattle Herd Manager.exe"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-dmg",
-          "config": {
-            "name": "Cattle Herd Manager"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": ["darwin", "linux"]
-        }
-      ]
-    }
   }
 }
