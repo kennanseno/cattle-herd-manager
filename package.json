@@ -1,6 +1,6 @@
 {
   "name": "cattle-herd-manager",
-  "version": "0.9.1",
+  "version": "0.9.0",
   "private": true,
   "main": "electron/main.js",
   "scripts": {
