@@ -120,7 +120,7 @@ function PedigreeConnector({ width, leftCenter, rightCenter, height = 12 }: {
 }) {
   const mid = (leftCenter + rightCenter) / 2
   const half = height / 2
-  const line = "#c9b98a"
+  const line = "#242322"
   const t = 0.75
   return (
     <View style={{ width, height, position: "relative" }}>
