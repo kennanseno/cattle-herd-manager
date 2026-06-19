@@ -92,6 +92,10 @@ To view the app features visually, open:
 
 - [cattle-manager-feature-video.webm](cattle-manager-feature-video.webm)
 
+Or view the animated demo directly in the README:
+
+![Feature walkthrough](assets/cattle-manager-feature.gif)
+
 ## Notes
 
 - The app uses `next dev -p 9999`, so the development server is intentionally configured on port `9999`.
