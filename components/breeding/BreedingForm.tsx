@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
@@ -60,7 +60,7 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
   const males = allCattle.filter((c) => c.sex === "male" && c.status === "active")
 
   const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<FormValues>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       cowTagNumber: "",
       sireTagNumber: "",
@@ -92,7 +92,6 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
   const breedDate = watch("breedDate")
   const breedDateTo = watch("breedDateTo")
   const status = watch("status")
-  const actualCalvingDate = watch("actualCalvingDate")
   const calvingFrom = breedDate ? calcCalvingDate(breedDate) : null
   const calvingTo = rangeMode && breedDateTo ? calcCalvingDate(breedDateTo) : null
 

@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { toast } from "sonner"
 import {
-  Plus, Search, Filter, Eye, Pencil, Trash2, ChevronUp, ChevronDown,
+  Plus, Search, Eye, Pencil, Trash2, ChevronUp, ChevronDown,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +27,11 @@ import { formatDate, getAgeInMonths, getAgeInYears, isCalf, cn } from "@/lib/uti
 import { PaginationBar } from "@/components/ui/pagination-bar"
 
 type SortKey = "tagNumber" | "dateOfBirth" | "sex" | "breed" | "status"
+
+function SortIcon({ k, sortKey, dir }: { k: string; sortKey: string; dir: "asc" | "desc" }) {
+  if (sortKey !== k) return null
+  return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+}
 
 function statusBadge(status: Cattle["status"]) {
   const map = {
@@ -71,8 +76,6 @@ export function CattleTable({ cattle }: CattleTableProps) {
   const PAGE_SIZE = 20
   const breeds = Array.from(new Set(cattle.map((c) => c.breed).filter(Boolean)))
 
-  useEffect(() => { setPage(1) }, [search, filterSex, filterStatus, filterBreed])
-
   const filtered = cattle
     .filter((c) => {
       if (filterStatus !== "all" && c.status !== filterStatus) return false
@@ -83,7 +86,9 @@ export function CattleTable({ cattle }: CattleTableProps) {
         return (
           c.tagNumber.toLowerCase().includes(q) ||
           c.nickname?.toLowerCase().includes(q) ||
-          c.breed.toLowerCase().includes(q)
+          c.breed.toLowerCase().includes(q) ||
+          c.sireTagNumber?.toLowerCase().includes(q) ||
+          c.damTagNumber?.toLowerCase().includes(q)
         )
       }
       return true
@@ -93,16 +98,13 @@ export function CattleTable({ cattle }: CattleTableProps) {
       return a[sortKey] < b[sortKey] ? -dir : a[sortKey] > b[sortKey] ? dir : 0
     })
 
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"))
     else { setSortKey(key); setSortDir("asc") }
-  }
-
-  function SortIcon({ k }: { k: SortKey }) {
-    if (sortKey !== k) return null
-    return sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
   }
 
   async function handleDelete() {
@@ -128,7 +130,7 @@ export function CattleTable({ cattle }: CattleTableProps) {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by tag, name, or breed..."
+            placeholder="Search by tag, name, breed, sire or dam..."
             className="pl-8"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -178,18 +180,18 @@ export function CattleTable({ cattle }: CattleTableProps) {
             <TableRow>
               <TableHead className="w-12"></TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("tagNumber")}>
-                <span className="flex items-center gap-1">Tag # <SortIcon k="tagNumber" /></span>
+                <span className="flex items-center gap-1">Tag # <SortIcon k="tagNumber" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead>Nickname</TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("dateOfBirth")}>
-                <span className="flex items-center gap-1">DOB <SortIcon k="dateOfBirth" /></span>
+                <span className="flex items-center gap-1">DOB <SortIcon k="dateOfBirth" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead>Age</TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("sex")}>
-                <span className="flex items-center gap-1">Sex <SortIcon k="sex" /></span>
+                <span className="flex items-center gap-1">Sex <SortIcon k="sex" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("breed")}>
-                <span className="flex items-center gap-1">Breed <SortIcon k="breed" /></span>
+                <span className="flex items-center gap-1">Breed <SortIcon k="breed" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -254,7 +256,7 @@ export function CattleTable({ cattle }: CattleTableProps) {
         </Table>
       </div>
 
-      <PaginationBar page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} label="cattle" />
+      <PaginationBar page={currentPage} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} label="cattle" />
 
       <CattleForm
         open={formOpen}

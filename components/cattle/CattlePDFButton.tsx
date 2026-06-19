@@ -5,7 +5,6 @@ import { FileDown, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import type { Cattle, FarmSettings } from "@/types"
-import { formatDate, getAgeInYears, getAgeInMonths } from "@/lib/utils"
 
 interface CattlePDFButtonProps {
   cattle: Cattle

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
@@ -58,8 +58,8 @@ export function HealthForm({ open, onOpenChange, record, allCattle, onSuccess }:
 
   const activeCattle = allCattle.filter((c) => c.status === "active")
 
-  const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<FormValues>({
-    resolver: zodResolver(schema) as any,
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       recordDate: record?.recordDate || "",
       veterinarian: record?.veterinarian || "",
@@ -68,6 +68,10 @@ export function HealthForm({ open, onOpenChange, record, allCattle, onSuccess }:
     },
   })
 
+  // Reinitialize all form state when the dialog opens or the edited record
+  // changes. This is a legitimate sync of local UI state to the open/record
+  // props; the setState calls only run on open, not on every render.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (open) {
       reset({
@@ -90,6 +94,7 @@ export function HealthForm({ open, onOpenChange, record, allCattle, onSuccess }:
       }
     }
   }, [open, record])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
@@ -149,7 +154,7 @@ export function HealthForm({ open, onOpenChange, record, allCattle, onSuccess }:
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Health Record" : "Add Health Record"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="recordDate">Date *</Label>

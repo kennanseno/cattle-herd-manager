@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Plus, Pencil, Trash2, Search, TrendingUp, TrendingDown, ChevronUp, ChevronDown, FileDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -21,6 +20,11 @@ import { formatDate, formatPHP, cn } from "@/lib/utils"
 import { PaginationBar } from "@/components/ui/pagination-bar"
 
 type SortKey = "date" | "type" | "category" | "amount"
+
+function SortIcon({ k, sortKey, dir }: { k: string; sortKey: string; dir: "asc" | "desc" }) {
+  if (sortKey !== k) return null
+  return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+}
 
 interface FinanceTableProps {
   records: FinanceRecord[]
@@ -47,15 +51,8 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
     setPage(1)
   }
 
-  function SortIcon({ k }: { k: SortKey }) {
-    if (sortKey !== k) return null
-    return sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-  }
-
   const years = Array.from(new Set(records.map((r) => r.date.slice(0, 4)))).sort().reverse()
   if (filterYear !== "all" && !years.includes(filterYear)) years.unshift(filterYear)
-
-  useEffect(() => { setPage(1) }, [search, filterYear])
 
   const filtered = records
     .filter((r) => {
@@ -76,7 +73,9 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
     }
   })
 
-  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   const totalIncome = filtered.filter((r) => r.type === "income").reduce((s, r) => s + parseFloat(r.amount || "0"), 0)
   const totalExpense = filtered.filter((r) => r.type === "expense").reduce((s, r) => s + parseFloat(r.amount || "0"), 0)
@@ -208,17 +207,17 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("date")}>
-                <span className="flex items-center gap-1">Date <SortIcon k="date" /></span>
+                <span className="flex items-center gap-1">Date <SortIcon k="date" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("type")}>
-                <span className="flex items-center gap-1">Type <SortIcon k="type" /></span>
+                <span className="flex items-center gap-1">Type <SortIcon k="type" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("category")}>
-                <span className="flex items-center gap-1">Category <SortIcon k="category" /></span>
+                <span className="flex items-center gap-1">Category <SortIcon k="category" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead>Description</TableHead>
               <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("amount")}>
-                <span className="flex items-center justify-end gap-1">Amount <SortIcon k="amount" /></span>
+                <span className="flex items-center justify-end gap-1">Amount <SortIcon k="amount" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -261,7 +260,7 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
         </Table>
       </div>
 
-      <PaginationBar page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} label="transactions" />
+      <PaginationBar page={currentPage} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} label="transactions" />
 
       <FinanceForm
         open={formOpen}

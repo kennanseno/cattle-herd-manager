@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Pencil, MoreVertical, Archive, RefreshCw } from "lucide-react"
+import { Pencil, MoreVertical, Archive } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,

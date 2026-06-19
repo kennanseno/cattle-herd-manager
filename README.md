@@ -72,6 +72,12 @@ The app uses the following local files:
 
 If these files do not exist yet, the app may create them or expect them to be present when importing data.
 
+Important:
+
+- Files under data/ are local runtime state for your environment.
+- In normal development, avoid committing data/*.csv or data/settings.json changes unless you are intentionally updating shared seed/sample data.
+- Before committing code-only changes, review git status to ensure local herd/finance/health data changes are not staged.
+
 ## Features
 
 - Cattle record management
@@ -79,6 +85,12 @@ If these files do not exist yet, the app may create them or expect them to be pr
 - Health and finance tracking
 - PDF export for cattle ownership certificates
 - Image upload and file serving via API routes
+
+## Feature walkthrough video
+
+To view the app features visually, open:
+
+- [cattle-manager-feature-video.webm](cattle-manager-feature-video.webm)
 
 ## Notes
 

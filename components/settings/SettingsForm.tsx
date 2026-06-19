@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
@@ -38,7 +38,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   )
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       farmName: initialSettings.farmName || "",
       ownerName: initialSettings.ownerName || "",
