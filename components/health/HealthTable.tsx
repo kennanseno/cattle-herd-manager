@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Plus, Pencil, Trash2, Search, ChevronUp, ChevronDown, FileDown } from "lucide-react"
@@ -21,6 +21,11 @@ import { PaginationBar } from "@/components/ui/pagination-bar"
 
 type SortKey = "recordDate" | "cost"
 
+function SortIcon({ k, sortKey, dir }: { k: string; sortKey: string; dir: "asc" | "desc" }) {
+  if (sortKey !== k) return null
+  return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+}
+
 interface HealthTableProps {
   records: HealthRecord[]
   allCattle: Cattle[]
@@ -39,17 +44,10 @@ export function HealthTable({ records, allCattle }: HealthTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("recordDate")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
 
-  useEffect(() => { setPage(1) }, [search])
-
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"))
     else { setSortKey(key); setSortDir(key === "recordDate" ? "desc" : "asc") }
     setPage(1)
-  }
-
-  function SortIcon({ k }: { k: SortKey }) {
-    if (sortKey !== k) return null
-    return sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
   }
 
   const filtered = records.filter((r) => {
@@ -70,7 +68,9 @@ export function HealthTable({ records, allCattle }: HealthTableProps) {
     return a.recordDate < b.recordDate ? dir * -1 : a.recordDate > b.recordDate ? dir : 0
   })
 
-  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   const totalCost = sorted.reduce((s, r) => s + parseFloat(r.cost || "0"), 0)
 
@@ -174,13 +174,13 @@ export function HealthTable({ records, allCattle }: HealthTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("recordDate")}>
-                <span className="flex items-center gap-1">Date <SortIcon k="recordDate" /></span>
+                <span className="flex items-center gap-1">Date <SortIcon k="recordDate" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Cattle</TableHead>
               <TableHead>Veterinarian</TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("cost")}>
-                <span className="flex items-center gap-1">Cost <SortIcon k="cost" /></span>
+                <span className="flex items-center gap-1">Cost <SortIcon k="cost" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead>Notes</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -225,7 +225,7 @@ export function HealthTable({ records, allCattle }: HealthTableProps) {
         </Table>
       </div>
 
-      <PaginationBar page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} label="records" />
+      <PaginationBar page={currentPage} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} label="records" />
 
       <HealthForm
         open={formOpen}

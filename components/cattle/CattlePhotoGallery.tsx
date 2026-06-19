@@ -4,7 +4,6 @@ import { useState, useRef, useCallback } from "react"
 import Image from "next/image"
 import { toast } from "sonner"
 import { Upload, X, Loader2, ImageIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,

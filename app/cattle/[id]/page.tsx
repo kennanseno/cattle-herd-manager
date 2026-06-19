@@ -1,18 +1,17 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { getAllCattle, getBreedingByCow } from "@/lib/data"
+import { getAllCattle } from "@/lib/data"
 import { formatDate, getAgeInYears, getAgeInMonths, isCalf } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { FamilyTree } from "@/components/cattle/FamilyTree"
 import { CattleDetailActions } from "@/components/cattle/CattleDetailActions"
 import { CattlePDFButton } from "@/components/cattle/CattlePDFButton"
 import { CattlePhotoGallery } from "@/components/cattle/CattlePhotoGallery"
 import { CattleNotesEditor } from "@/components/cattle/CattleNotesEditor"
-import { ArrowLeft, Baby, Beef } from "lucide-react"
+import { ArrowLeft, Baby } from "lucide-react"
 import type { Cattle } from "@/types"
 import { getSettings } from "@/lib/data"
 
@@ -39,7 +38,7 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
   function progenyAge(dob: string): string {
     const months = getAgeInMonths(dob)
     if (months < 1) {
-      const days = Math.round((Date.now() - new Date(dob).getTime()) / 86_400_000)
+      const days = Math.round((new Date().getTime() - new Date(dob).getTime()) / 86_400_000)
       return `${days}d old`
     }
     if (months < 12) return `${months}mo old`
@@ -47,9 +46,6 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
     const rem = months % 12
     return rem > 0 ? `${years}yr ${rem}mo old` : `${years}yr old`
   }
-
-  // Breeding records if female
-  const breedingRecords = cattle.sex === "female" ? getBreedingByCow(cattle.tagNumber) : []
 
   const ageMonths = getAgeInMonths(cattle.dateOfBirth)
   const ageYears = getAgeInYears(cattle.dateOfBirth)
@@ -160,9 +156,6 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
 
       {/* Family Tree */}
       <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="text-base">Pedigree / Family Tree</CardTitle>
-        </CardHeader>
         <CardContent>
           <FamilyTree cattle={cattle} allCattle={allCattle} />
         </CardContent>

@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const allBreeding = getAllBreeding()
   const allFinances = getAllFinances()
   const settings = getSettings()
+  const cattleByTag = new Map(allCattle.map((c) => [c.tagNumber, c]))
 
   const activeCattle = allCattle.filter((c) => c.status === "active")
   const calves = activeCattle.filter((c) => isCalf(c.dateOfBirth))
@@ -23,7 +24,6 @@ export default function DashboardPage() {
   const cows = activeCattle.filter((c) => c.sex === "female" && !isCalf(c.dateOfBirth))
 
   // Upcoming calvings (pending, calving in next 60 days)
-  const today = new Date()
   const upcomingCalvings = allBreeding
     .filter((r) => r.status === "pending" && r.possibleCalvingDate)
     .map((r) => ({ ...r, daysLeft: daysUntil(r.possibleCalvingDate) }))
@@ -31,8 +31,15 @@ export default function DashboardPage() {
     .sort((a, b) => a.daysLeft - b.daysLeft)
 
   // Finance summary (all time)
-  const totalIncome = allFinances.filter((f) => f.type === "income").reduce((s, f) => s + parseFloat(f.amount), 0)
-  const totalExpense = allFinances.filter((f) => f.type === "expense").reduce((s, f) => s + parseFloat(f.amount), 0)
+  const { totalIncome, totalExpense } = allFinances.reduce(
+    (totals, f) => {
+      const amount = parseFloat(f.amount)
+      if (f.type === "income") totals.totalIncome += amount
+      if (f.type === "expense") totals.totalExpense += amount
+      return totals
+    },
+    { totalIncome: 0, totalExpense: 0 },
+  )
   const netBalance = totalIncome - totalExpense
 
   // Weaning alerts: calves aged 5–7 months (approaching or at weaning window)
@@ -46,15 +53,23 @@ export default function DashboardPage() {
   // Alerts: females age > 4yr with no calving records OR last calving > 2yr ago
   const twoYearsAgo = new Date()
   twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
+  const latestCalvingByCow = allBreeding.reduce((acc, r) => {
+    if (r.status !== "calved") return acc
+    const date = r.possibleCalvingDate || r.breedDate
+    if (!date) return acc
+
+    const latest = acc.get(r.cowTagNumber)
+    if (!latest || date > latest) {
+      acc.set(r.cowTagNumber, date)
+    }
+    return acc
+  }, new Map<string, string>())
+
   const alertCows = cows.filter((cow) => {
     if (getAgeInYears(cow.dateOfBirth) < 4) return false
-    const cowBreedings = allBreeding.filter((r) => r.cowTagNumber === cow.tagNumber && r.status === "calved")
-    if (cowBreedings.length === 0) return true
-    const lastCalving = cowBreedings
-      .map((r) => r.possibleCalvingDate || r.breedDate)
-      .sort()
-      .pop()
-    return lastCalving && new Date(lastCalving) < twoYearsAgo
+    const lastCalving = latestCalvingByCow.get(cow.tagNumber)
+    if (!lastCalving) return true
+    return new Date(lastCalving) < twoYearsAgo
   })
 
   return (
@@ -106,7 +121,7 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {upcomingCalvings.map((r) => {
-                  const cow = allCattle.find((c) => c.tagNumber === r.cowTagNumber)
+                  const cow = cattleByTag.get(r.cowTagNumber)
                   const calvingFrom = calcCalvingDate(r.breedDate)
                   const calvingTo = r.breedDateTo ? calcCalvingDate(r.breedDateTo) : null
                   const calvingDisplay = calvingTo ? `${formatDate(calvingFrom)} to ${formatDate(calvingTo)}` : formatDate(r.possibleCalvingDate)

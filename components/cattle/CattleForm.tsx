@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
@@ -11,7 +11,6 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
@@ -22,7 +21,6 @@ import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Checkbox } from "@/components/ui/checkbox"
 import type { Cattle } from "@/types"
 import { formatDate } from "@/lib/utils"
 import { cn } from "@/lib/utils"
@@ -173,7 +171,7 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
   }, [open, cattle])
 
   const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<FormValues>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       tagNumber: cattle?.tagNumber || "",
       dateOfBirth: cattle?.dateOfBirth || "",

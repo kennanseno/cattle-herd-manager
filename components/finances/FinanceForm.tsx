@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
@@ -65,7 +65,7 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false)
 
   const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<FormValues>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       date: record?.date || "",
       type: record?.type || "expense",
@@ -128,7 +128,7 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Type */}
           <div className="space-y-2">
             <Label>Type</Label>

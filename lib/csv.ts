@@ -5,6 +5,13 @@ import path from 'path';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 
+type CsvCacheEntry = {
+  mtimeMs: number;
+  records: Record<string, unknown>[];
+};
+
+const csvCache = new Map<string, CsvCacheEntry>();
+
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   const imagesDir = path.join(DATA_DIR, 'images');
@@ -15,19 +22,42 @@ export function getDataPath(filename: string): string {
   return path.join(DATA_DIR, filename);
 }
 
+function cloneRecords<T extends object>(records: T[]): T[] {
+  // Return fresh objects so callers can mutate safely without affecting cache.
+  return records.map((record) => ({ ...record }));
+}
+
 export function readCSV<T extends object>(filename: string): T[] {
   ensureDataDir();
   const filePath = getDataPath(filename);
-  if (!fs.existsSync(filePath)) return [];
+  if (!fs.existsSync(filePath)) {
+    csvCache.delete(filePath);
+    return [];
+  }
+
+  const { mtimeMs } = fs.statSync(filePath);
+  const cached = csvCache.get(filePath);
+  if (cached && cached.mtimeMs === mtimeMs) {
+    return cloneRecords(cached.records as T[]);
+  }
+
   const content = fs.readFileSync(filePath, 'utf-8');
   if (!content.trim()) return [];
   try {
-    return parse(content, {
+    const parsed = parse(content, {
       columns: true,
       skip_empty_lines: true,
       trim: true,
-    }) as T[];
+    }) as Record<string, unknown>[];
+
+    csvCache.set(filePath, {
+      mtimeMs,
+      records: parsed,
+    });
+
+    return cloneRecords(parsed as T[]);
   } catch {
+    csvCache.delete(filePath);
     return [];
   }
 }
@@ -49,6 +79,7 @@ export function writeCSV<T extends object>(filename: string, records: T[]): void
 
   const content = csvStringify(records as Record<string, unknown>[], { header: true, ...(columns ? { columns } : {}) });
   fs.writeFileSync(filePath, content, 'utf-8');
+  csvCache.delete(filePath);
 }
 
 export function readSettings<T>(filename: string, defaults: T): T {

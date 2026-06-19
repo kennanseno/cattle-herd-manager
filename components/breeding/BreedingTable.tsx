@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Plus, Pencil, Trash2, Search, ChevronUp, ChevronDown } from "lucide-react"
@@ -31,6 +31,11 @@ function statusBadge(status: BreedingRecord["status"]) {
 
 type SortKey = "breedDate" | "possibleCalvingDate" | "status" | "daysUntil"
 
+function SortIcon({ k, sortKey, dir }: { k: string; sortKey: string; dir: "asc" | "desc" }) {
+  if (sortKey !== k) return null
+  return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+}
+
 const STATUS_ORDER: Record<BreedingRecord["status"], number> = { pending: 0, calved: 1, failed: 2 }
 
 interface BreedingTableProps {
@@ -52,17 +57,10 @@ export function BreedingTable({ records, allCattle }: BreedingTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("breedDate")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
 
-  useEffect(() => { setPage(1) }, [search, filterStatus])
-
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"))
     else { setSortKey(key); setSortDir("asc") }
     setPage(1)
-  }
-
-  function SortIcon({ k }: { k: SortKey }) {
-    if (sortKey !== k) return null
-    return sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
   }
 
   const filtered = records.filter((r) => {
@@ -93,7 +91,9 @@ export function BreedingTable({ records, allCattle }: BreedingTableProps) {
     }
   })
 
-  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   function cowLabel(tag: string) {
     const c = allCattle.find((x) => x.tagNumber === tag)
@@ -152,16 +152,16 @@ export function BreedingTable({ records, allCattle }: BreedingTableProps) {
               <TableHead>Cow</TableHead>
               <TableHead>Sire</TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("breedDate")}>
-                <span className="flex items-center gap-1">Breed Date <SortIcon k="breedDate" /></span>
+                <span className="flex items-center gap-1">Breed Date <SortIcon k="breedDate" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("possibleCalvingDate")}>
-                <span className="flex items-center gap-1">Expected Calving <SortIcon k="possibleCalvingDate" /></span>
+                <span className="flex items-center gap-1">Expected Calving <SortIcon k="possibleCalvingDate" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("daysUntil")}>
-                <span className="flex items-center gap-1">Days Until <SortIcon k="daysUntil" /></span>
+                <span className="flex items-center gap-1">Days Until <SortIcon k="daysUntil" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("status")}>
-                <span className="flex items-center gap-1">Status <SortIcon k="status" /></span>
+                <span className="flex items-center gap-1">Status <SortIcon k="status" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -233,7 +233,7 @@ export function BreedingTable({ records, allCattle }: BreedingTableProps) {
         </Table>
       </div>
 
-      <PaginationBar page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} label="records" />
+      <PaginationBar page={currentPage} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} label="records" />
 
       <BreedingForm
         open={formOpen}
