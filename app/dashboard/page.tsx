@@ -10,6 +10,7 @@ import {
   Beef, Baby, Users, AlertTriangle, TrendingUp, TrendingDown, CalendarDays, Milk,
 } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
+import { FinanceTrendChart, type YearlyFinanceDatum } from "@/components/dashboard/FinanceTrendChart"
 
 export default function DashboardPage() {
   const allCattle = getAllCattle()
@@ -41,6 +42,19 @@ export default function DashboardPage() {
     { totalIncome: 0, totalExpense: 0 },
   )
   const netBalance = totalIncome - totalExpense
+
+  const yearlyFinanceData: YearlyFinanceDatum[] = Object.values(
+    allFinances.reduce((acc, finance) => {
+      const year = finance.date.slice(0, 4)
+      const amount = parseFloat(finance.amount) || 0
+      const entry = acc[year] ?? { year, income: 0, expense: 0, net: 0 }
+      if (finance.type === "income") entry.income += amount
+      if (finance.type === "expense") entry.expense += amount
+      entry.net = entry.income - entry.expense
+      acc[year] = entry
+      return acc
+    }, {} as Record<string, YearlyFinanceDatum>),
+  ).sort((a, b) => a.year.localeCompare(b.year))
 
   // Weaning alerts: calves aged 5–7 months (approaching or at weaning window)
   // and calves over 7 months still active (overdue)
@@ -106,9 +120,9 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-4">
         {/* Upcoming Calvings */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <CalendarDays className="h-4 w-4 text-primary" />
@@ -156,7 +170,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Finance Summary */}
-        <Card>
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <TrendingUp className="h-4 w-4 text-primary" />
@@ -188,10 +202,24 @@ export default function DashboardPage() {
             </Link>
           </CardContent>
         </Card>
+
+        {/* Finance Trend (takes half width) */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Finance Trend
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FinanceTrendChart data={yearlyFinanceData} />
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Weaning Soon */}
-      <Card>
+      {/* Weaning Soon + Breeding Alerts (side-by-side) */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Milk className="h-4 w-4 text-primary" />
@@ -229,10 +257,10 @@ export default function DashboardPage() {
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
 
-      {/* Alerts */}
-      <Card>
+        {/* Alerts */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <AlertTriangle className="h-4 w-4 text-primary" />
@@ -271,6 +299,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+      </div>
     </div>
   )
 }
