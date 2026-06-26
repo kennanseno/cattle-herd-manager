@@ -3,8 +3,10 @@ import { SettingsForm } from "@/components/settings/SettingsForm"
 import { DataPortabilityCard } from "@/components/settings/DataPortabilityCard"
 import { Settings } from "lucide-react"
 
-export default function SettingsPage() {
-  const settings = getSettings()
+export const dynamic = "force-dynamic"
+
+export default async function SettingsPage() {
+  const settings = await getSettings()
 
   return (
     <div className="p-6 max-w-2xl mx-auto">

@@ -21,12 +21,14 @@ export const metadata: Metadata = {
   description: "Manage your cattle herd, health, finances and breeding records",
 };
 
-export default function RootLayout({
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = getSettings();
+  const settings = await getSettings();
 
   return (
     <html

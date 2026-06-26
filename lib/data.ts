@@ -1,4 +1,4 @@
-import { readCSV, writeCSV, readSettings, writeSettings } from './csv';
+import { storage } from './storage';
 import { calcCalvingDate, calcBreedDate, nowISO } from './utils';
 import type {
   Cattle, BreedingRecord, HealthRecord, FinanceRecord, FarmSettings,
@@ -11,57 +11,57 @@ const defaultSettings: FarmSettings = {
 
 // ─── CATTLE ────────────────────────────────────────────────────────────────
 
-export function getAllCattle(): Cattle[] {
-  return readCSV<Cattle>('cattle.csv');
+export async function getAllCattle(): Promise<Cattle[]> {
+  return storage.readTable<Cattle>('cattle');
 }
 
-export function getActiveCattle(): Cattle[] {
-  return getAllCattle().filter((c) => c.status === 'active');
+export async function getActiveCattle(): Promise<Cattle[]> {
+  return (await getAllCattle()).filter((c) => c.status === 'active');
 }
 
-export function getCattleByTag(tagNumber: string): Cattle | undefined {
-  return getAllCattle().find((c) => c.tagNumber === tagNumber);
+export async function getCattleByTag(tagNumber: string): Promise<Cattle | undefined> {
+  return (await getAllCattle()).find((c) => c.tagNumber === tagNumber);
 }
 
-export function createCattle(data: Omit<Cattle, 'createdAt' | 'updatedAt'>): Cattle {
-  const all = getAllCattle();
+export async function createCattle(data: Omit<Cattle, 'createdAt' | 'updatedAt'>): Promise<Cattle> {
+  const all = await getAllCattle();
   const now = nowISO();
   const record: Cattle = { ...data, createdAt: now, updatedAt: now };
-  writeCSV('cattle.csv', [...all, record]);
+  await storage.writeTable('cattle', [...all, record]);
   return record;
 }
 
-export function updateCattle(tagNumber: string, data: Partial<Cattle>): Cattle | null {
-  const all = getAllCattle();
+export async function updateCattle(tagNumber: string, data: Partial<Cattle>): Promise<Cattle | null> {
+  const all = await getAllCattle();
   const idx = all.findIndex((c) => c.tagNumber === tagNumber);
   if (idx === -1) return null;
   const updated = { ...all[idx], ...data, updatedAt: nowISO() };
   all[idx] = updated;
-  writeCSV('cattle.csv', all);
+  await storage.writeTable('cattle', all);
   return updated;
 }
 
-export function softDeleteCattle(tagNumber: string): boolean {
-  const result = updateCattle(tagNumber, { status: 'archived' });
+export async function softDeleteCattle(tagNumber: string): Promise<boolean> {
+  const result = await updateCattle(tagNumber, { status: 'archived' });
   return result !== null;
 }
 
 // ─── BREEDING ──────────────────────────────────────────────────────────────
 
-export function getAllBreeding(): BreedingRecord[] {
-  return readCSV<BreedingRecord>('breeding.csv');
+export async function getAllBreeding(): Promise<BreedingRecord[]> {
+  return storage.readTable<BreedingRecord>('breeding');
 }
 
-export function getBreedingById(id: string): BreedingRecord | undefined {
-  return getAllBreeding().find((b) => b.id === id);
+export async function getBreedingById(id: string): Promise<BreedingRecord | undefined> {
+  return (await getAllBreeding()).find((b) => b.id === id);
 }
 
-export function getBreedingByCow(cowTagNumber: string): BreedingRecord[] {
-  return getAllBreeding().filter((b) => b.cowTagNumber === cowTagNumber);
+export async function getBreedingByCow(cowTagNumber: string): Promise<BreedingRecord[]> {
+  return (await getAllBreeding()).filter((b) => b.cowTagNumber === cowTagNumber);
 }
 
-export function createBreeding(data: Omit<BreedingRecord, 'id' | 'possibleCalvingDate' | 'createdAt' | 'updatedAt'>): BreedingRecord {
-  const all = getAllBreeding();
+export async function createBreeding(data: Omit<BreedingRecord, 'id' | 'possibleCalvingDate' | 'createdAt' | 'updatedAt'>): Promise<BreedingRecord> {
+  const all = await getAllBreeding();
   const now = nowISO();
   const record: BreedingRecord = {
     ...data,
@@ -70,12 +70,12 @@ export function createBreeding(data: Omit<BreedingRecord, 'id' | 'possibleCalvin
     createdAt: now,
     updatedAt: now,
   };
-  writeCSV('breeding.csv', [...all, record]);
+  await storage.writeTable('breeding', [...all, record]);
   return record;
 }
 
-export function updateBreeding(id: string, data: Partial<BreedingRecord>): BreedingRecord | null {
-  const all = getAllBreeding();
+export async function updateBreeding(id: string, data: Partial<BreedingRecord>): Promise<BreedingRecord | null> {
+  const all = await getAllBreeding();
   const idx = all.findIndex((b) => b.id === id);
   if (idx === -1) return null;
   const updated = { ...all[idx], ...data, updatedAt: nowISO() };
@@ -89,22 +89,22 @@ export function updateBreeding(id: string, data: Partial<BreedingRecord>): Breed
     updated.possibleCalvingDate = data.actualCalvingDate;
   }
   all[idx] = updated;
-  writeCSV('breeding.csv', all);
+  await storage.writeTable('breeding', all);
   return updated;
 }
 
-export function deleteBreeding(id: string): boolean {
-  const all = getAllBreeding();
+export async function deleteBreeding(id: string): Promise<boolean> {
+  const all = await getAllBreeding();
   const filtered = all.filter((b) => b.id !== id);
   if (filtered.length === all.length) return false;
-  writeCSV('breeding.csv', filtered);
+  await storage.writeTable('breeding', filtered);
   return true;
 }
 
 // Auto-create breeding record when adding a calf with known dam
-export function autoCreateBreedingForCalf(calf: Cattle): void {
+export async function autoCreateBreedingForCalf(calf: Cattle): Promise<void> {
   if (!calf.damTagNumber) return;
-  createBreeding({
+  await createBreeding({
     cowTagNumber: calf.damTagNumber,
     sireTagNumber: calf.sireTagNumber || '',
     breedDate: calcBreedDate(calf.dateOfBirth),
@@ -117,83 +117,83 @@ export function autoCreateBreedingForCalf(calf: Cattle): void {
 
 // ─── HEALTH ────────────────────────────────────────────────────────────────
 
-export function getAllHealth(): HealthRecord[] {
-  return readCSV<HealthRecord>('health.csv');
+export async function getAllHealth(): Promise<HealthRecord[]> {
+  return storage.readTable<HealthRecord>('health');
 }
 
-export function getHealthById(id: string): HealthRecord | undefined {
-  return getAllHealth().find((h) => h.id === id);
+export async function getHealthById(id: string): Promise<HealthRecord | undefined> {
+  return (await getAllHealth()).find((h) => h.id === id);
 }
 
-export function createHealth(data: Omit<HealthRecord, 'id' | 'createdAt' | 'updatedAt'>): HealthRecord {
-  const all = getAllHealth();
+export async function createHealth(data: Omit<HealthRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<HealthRecord> {
+  const all = await getAllHealth();
   const now = nowISO();
   const record: HealthRecord = { ...data, id: uuidv4(), createdAt: now, updatedAt: now };
-  writeCSV('health.csv', [...all, record]);
+  await storage.writeTable('health', [...all, record]);
   return record;
 }
 
-export function updateHealth(id: string, data: Partial<HealthRecord>): HealthRecord | null {
-  const all = getAllHealth();
+export async function updateHealth(id: string, data: Partial<HealthRecord>): Promise<HealthRecord | null> {
+  const all = await getAllHealth();
   const idx = all.findIndex((h) => h.id === id);
   if (idx === -1) return null;
   const updated = { ...all[idx], ...data, updatedAt: nowISO() };
   all[idx] = updated;
-  writeCSV('health.csv', all);
+  await storage.writeTable('health', all);
   return updated;
 }
 
-export function deleteHealth(id: string): boolean {
-  const all = getAllHealth();
+export async function deleteHealth(id: string): Promise<boolean> {
+  const all = await getAllHealth();
   const filtered = all.filter((h) => h.id !== id);
   if (filtered.length === all.length) return false;
-  writeCSV('health.csv', filtered);
+  await storage.writeTable('health', filtered);
   return true;
 }
 
 // ─── FINANCES ──────────────────────────────────────────────────────────────
 
-export function getAllFinances(): FinanceRecord[] {
-  return readCSV<FinanceRecord>('finances.csv');
+export async function getAllFinances(): Promise<FinanceRecord[]> {
+  return storage.readTable<FinanceRecord>('finances');
 }
 
-export function getFinanceById(id: string): FinanceRecord | undefined {
-  return getAllFinances().find((f) => f.id === id);
+export async function getFinanceById(id: string): Promise<FinanceRecord | undefined> {
+  return (await getAllFinances()).find((f) => f.id === id);
 }
 
-export function createFinance(data: Omit<FinanceRecord, 'id' | 'createdAt' | 'updatedAt'>): FinanceRecord {
-  const all = getAllFinances();
+export async function createFinance(data: Omit<FinanceRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<FinanceRecord> {
+  const all = await getAllFinances();
   const now = nowISO();
   const record: FinanceRecord = { ...data, id: uuidv4(), createdAt: now, updatedAt: now };
-  writeCSV('finances.csv', [...all, record]);
+  await storage.writeTable('finances', [...all, record]);
   return record;
 }
 
-export function updateFinance(id: string, data: Partial<FinanceRecord>): FinanceRecord | null {
-  const all = getAllFinances();
+export async function updateFinance(id: string, data: Partial<FinanceRecord>): Promise<FinanceRecord | null> {
+  const all = await getAllFinances();
   const idx = all.findIndex((f) => f.id === id);
   if (idx === -1) return null;
   const updated = { ...all[idx], ...data, updatedAt: nowISO() };
   all[idx] = updated;
-  writeCSV('finances.csv', all);
+  await storage.writeTable('finances', all);
   return updated;
 }
 
-export function deleteFinance(id: string): boolean {
-  const all = getAllFinances();
+export async function deleteFinance(id: string): Promise<boolean> {
+  const all = await getAllFinances();
   const filtered = all.filter((f) => f.id !== id);
   if (filtered.length === all.length) return false;
-  writeCSV('finances.csv', filtered);
+  await storage.writeTable('finances', filtered);
   return true;
 }
 
 // ─── SETTINGS ──────────────────────────────────────────────────────────────
 
-export function getSettings(): FarmSettings {
-  return readSettings<FarmSettings>('settings.json', defaultSettings);
+export async function getSettings(): Promise<FarmSettings> {
+  return storage.readSettings<FarmSettings>(defaultSettings);
 }
 
-export function saveSettings(data: FarmSettings): FarmSettings {
-  writeSettings('settings.json', data);
+export async function saveSettings(data: FarmSettings): Promise<FarmSettings> {
+  await storage.writeSettings(data);
   return data;
 }

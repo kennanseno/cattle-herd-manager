@@ -101,6 +101,85 @@ Or view the animated demo directly in the README:
 - The app uses `next dev -p 9999`, so the development server is intentionally configured on port `9999`.
 - Uploaded images are served through the built-in image API under `/api/images/`.
 
-## Deploy
+## Storage backends
 
-This app can be deployed to any environment that supports Next.js. Use standard Next.js deployment workflows and ensure the local CSV/data directory is available if persistent storage is required.
+The app supports two storage backends, selected automatically at runtime:
+
+- **Local (default):** CSV files under `data/` and images under `data/images/`.
+  Used whenever the Google environment variables below are not set. Ideal for
+  local development.
+- **Google Sheets:** Used when the `GOOGLE_*` variables are set. Tabular data
+  is stored in a Google Spreadsheet (one tab per category: `cattle`,
+  `breeding`, `health`, `finances`, plus `settings`). This backend has no local
+  filesystem dependency, so it works on serverless hosts like Vercel.
+  **Note:** photo uploads are not available on this backend (service accounts
+  have no Drive storage quota); cattle photos are only supported by the local
+  backend.
+
+See [.env.example](.env.example) for the required variables.
+
+## Deploy to Vercel (Google Sheets)
+
+Vercel has no persistent filesystem, so the Google Sheets backend is required
+there.
+
+### 1. Create a Google service account
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and
+   create (or pick) a project.
+2. Enable the **Google Sheets API** for the project.
+3. Create a **Service Account** and add a **JSON key**. Download the key file.
+4. Note the service account email (looks like
+   `name@project.iam.gserviceaccount.com`).
+
+### 2. Create the spreadsheet
+
+1. Create a new Google Spreadsheet. Copy its ID from the URL
+   (`https://docs.google.com/spreadsheets/d/<ID>/edit`).
+2. **Share** the spreadsheet with the service account email (Editor access).
+   This step is required — without it the app cannot read or write.
+
+The app creates the needed tabs automatically on first write.
+
+### 3. Configure environment variables
+
+Set these in Vercel (Project → Settings → Environment Variables), matching
+[.env.example](.env.example):
+
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+- `GOOGLE_PRIVATE_KEY` — paste the full key; keep `\n` escapes intact and wrap
+  the value in quotes.
+- `GOOGLE_SHEETS_SPREADSHEET_ID`
+
+### 4. Deploy
+
+Import the GitHub repo into Vercel and deploy. No special build settings are
+needed — `next build` works as-is.
+
+### 5. Migrate existing data (optional)
+
+Your current data lives in `data/*.csv`. To move it into Google:
+
+1. Run the app locally **without** the `GOOGLE_*` variables (local backend) and
+   open **Settings → Export** to download a backup ZIP — or run
+   `curl http://localhost:9999/api/export -o backup.zip`.
+2. On the deployed app (Google backend), open **Settings → Import** and upload
+   that ZIP. This writes all records to the spreadsheet. (Photos in the ZIP are
+   skipped on the Google backend.)
+
+### Caveats
+
+- **Run a single instance.** The data model rewrites whole sheets, so multiple
+  concurrent instances can clash. Keep one running replica.
+- **No authentication is built in.** Anything deployed is publicly editable —
+  add access control (e.g. Vercel password protection or an auth middleware)
+  before exposing real data.
+- **API rate limits.** Google Sheets allows ~60 reads/min per user — ample for
+  personal use, not for heavy traffic.
+- **Back up regularly** using the built-in Export.
+
+## Deploy elsewhere
+
+This app can also run on any host with a persistent disk (a VPS, Fly.io with a
+volume, etc.) using the default local backend. Ensure the `data/` directory is
+writable and persisted.

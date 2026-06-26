@@ -2,9 +2,10 @@ import { getAllBreeding, getAllCattle } from "@/lib/data"
 import { BreedingTable } from "@/components/breeding/BreedingTable"
 import { HeartPulse } from "lucide-react"
 
-export default function BreedingPage() {
-  const records = getAllBreeding()
-  const allCattle = getAllCattle()
+export const dynamic = "force-dynamic"
+
+export default async function BreedingPage() {
+  const [records, allCattle] = await Promise.all([getAllBreeding(), getAllCattle()])
 
   return (
     <div className="p-6">

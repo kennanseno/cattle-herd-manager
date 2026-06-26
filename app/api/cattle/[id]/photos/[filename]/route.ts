@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
 import path from "path";
 import { getAllCattle, updateCattle } from "@/lib/data";
-
-const IMAGES_DIR = path.join(process.cwd(), "data", "images");
+import { storage } from "@/lib/storage";
 
 export async function DELETE(
   _request: Request,
@@ -19,7 +17,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
     }
 
-    const allCattle = getAllCattle();
+    const allCattle = await getAllCattle();
     const cattle = allCattle.find((c) => c.tagNumber === tagNumber);
     if (!cattle) return NextResponse.json({ error: "Cattle not found" }, { status: 404 });
 
@@ -29,11 +27,10 @@ export async function DELETE(
       .map((p) => p.trim())
       .filter((p) => p && p !== photoPath);
 
-    updateCattle(tagNumber, { photos: remaining.join(",") });
+    await updateCattle(tagNumber, { photos: remaining.join(",") });
 
-    // Delete the file from disk
-    const filepath = path.join(IMAGES_DIR, filename);
-    if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
+    // Delete the underlying image from storage
+    await storage.deleteImage(filename);
 
     return NextResponse.json({ ok: true });
   } catch {

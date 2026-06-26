@@ -4,7 +4,7 @@ import type { FinanceRecord } from "@/types";
 
 export async function GET() {
   try {
-    return NextResponse.json(getAllFinances());
+    return NextResponse.json(await getAllFinances());
   } catch {
     return NextResponse.json({ error: "Failed to fetch finance records" }, { status: 500 });
   }
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     if (!body.date || !body.type || !body.amount || !body.description) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
-    const record = createFinance(body);
+    const record = await createFinance(body);
     return NextResponse.json(record, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Failed to create finance record" }, { status: 500 });

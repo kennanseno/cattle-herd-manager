@@ -2,9 +2,10 @@ import { getAllHealth, getAllCattle } from "@/lib/data"
 import { HealthTable } from "@/components/health/HealthTable"
 import { Stethoscope } from "lucide-react"
 
-export default function HealthPage() {
-  const records = getAllHealth()
-  const allCattle = getAllCattle()
+export const dynamic = "force-dynamic"
+
+export default async function HealthPage() {
+  const [records, allCattle] = await Promise.all([getAllHealth(), getAllCattle()])
 
   return (
     <div className="p-6">

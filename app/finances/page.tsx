@@ -2,9 +2,10 @@ import { getAllFinances, getAllCattle } from "@/lib/data"
 import { FinanceTable } from "@/components/finances/FinanceTable"
 import { DollarSign } from "lucide-react"
 
-export default function FinancesPage() {
-  const records = getAllFinances()
-  const allCattle = getAllCattle()
+export const dynamic = "force-dynamic"
+
+export default async function FinancesPage() {
+  const [records, allCattle] = await Promise.all([getAllFinances(), getAllCattle()])
 
   return (
     <div className="p-6">

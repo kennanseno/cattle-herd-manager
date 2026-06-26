@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import AdmZip from "adm-zip";
-import fs from "fs";
 import path from "path";
-import { writeCSV, writeSettings } from "@/lib/csv";
+import { storage, isGoogleConfigured } from "@/lib/storage";
+import { mimeFromFilename } from "@/lib/storage/types";
 import type { Cattle, BreedingRecord, HealthRecord, FinanceRecord, FarmSettings } from "@/types";
-
-const IMAGES_DIR = path.join(process.cwd(), "data", "images");
 
 export async function POST(request: Request) {
   try {
@@ -29,22 +27,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid backup file — make sure it was exported from this app." }, { status: 400 });
     }
 
-    // Restore data files (always reset all categories)
-    writeCSV<Cattle>("cattle.csv", Array.isArray(body.cattle) ? body.cattle : []);
-    writeCSV<BreedingRecord>("breeding.csv", Array.isArray(body.breeding) ? body.breeding : []);
-    writeCSV<HealthRecord>("health.csv", Array.isArray(body.health) ? body.health : []);
-    writeCSV<FinanceRecord>("finances.csv", Array.isArray(body.finances) ? body.finances : []);
+    // Restore data tables (always reset all categories)
+    await storage.writeTable<Cattle>("cattle", Array.isArray(body.cattle) ? body.cattle : []);
+    await storage.writeTable<BreedingRecord>("breeding", Array.isArray(body.breeding) ? body.breeding : []);
+    await storage.writeTable<HealthRecord>("health", Array.isArray(body.health) ? body.health : []);
+    await storage.writeTable<FinanceRecord>("finances", Array.isArray(body.finances) ? body.finances : []);
     if (body.settings && typeof body.settings === "object") {
-      writeSettings<FarmSettings>("settings.json", body.settings);
+      await storage.writeSettings<FarmSettings>(body.settings);
     }
 
-    // Restore images
-    if (!fs.existsSync(IMAGES_DIR)) fs.mkdirSync(IMAGES_DIR, { recursive: true });
-    for (const entry of zip.getEntries()) {
-      if (entry.entryName.startsWith("images/") && !entry.isDirectory) {
-        const filename = path.basename(entry.entryName);
-        if (filename) {
-          fs.writeFileSync(path.join(IMAGES_DIR, filename), entry.getData());
+    // Restore images (not supported on the Google Sheets backend).
+    if (!isGoogleConfigured()) {
+      for (const entry of zip.getEntries()) {
+        if (entry.entryName.startsWith("images/") && !entry.isDirectory) {
+          const filename = path.basename(entry.entryName);
+          if (filename) {
+            await storage.uploadImage(filename, mimeFromFilename(filename), entry.getData());
+          }
         }
       }
     }

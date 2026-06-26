@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import { storage } from "@/lib/storage";
+import { mimeFromFilename } from "@/lib/storage/types";
 
-const IMAGES_DIR = path.join(process.cwd(), "data", "images");
+const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 
 export async function POST(request: Request) {
   try {
@@ -15,8 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
+    if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json({ error: "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed." }, { status: 400 });
     }
 
@@ -25,16 +24,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "File too large. Maximum size is 5MB." }, { status: 400 });
     }
 
-    if (!fs.existsSync(IMAGES_DIR)) {
-      fs.mkdirSync(IMAGES_DIR, { recursive: true });
-    }
-
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
     const filename = `${uuidv4()}.${ext}`;
-    const filepath = path.join(IMAGES_DIR, filename);
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    const arrayBuffer = await file.arrayBuffer();
-    fs.writeFileSync(filepath, Buffer.from(arrayBuffer));
+    await storage.uploadImage(filename, file.type || mimeFromFilename(filename), buffer);
 
     return NextResponse.json({ path: `data/images/${filename}`, filename });
   } catch {
