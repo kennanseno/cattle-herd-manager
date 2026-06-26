@@ -198,8 +198,13 @@ How it works:
    return `401`.
 2. On `/login`, entering the correct password sets a signed, HttpOnly session
    cookie (an HMAC of the password — the password itself is never stored).
-3. Changing `APP_PASSWORD` invalidates all existing sessions automatically.
-4. **Brute-force throttle.** After 5 failed attempts a client is locked out for
+3. **Session expiration.** Sessions expire after **15 minutes** of issue time
+   (not inactivity). When you have 2 minutes left, a confirmation dialog appears
+   asking if you want to continue. Clicking "Continue" refreshes your session
+   for another 15 minutes; clicking "Logout" ends the session immediately. If
+   the session expires without action, you are redirected to the login screen.
+4. Changing `APP_PASSWORD` invalidates all existing sessions automatically.
+5. **Brute-force throttle.** After 5 failed attempts a client is locked out for
    5 minutes (the login screen shows a live countdown). This state is held in
    memory per server process, so it's best-effort on serverless/multi-instance
    hosts and resets on redeploy — treat it as a speed bump, not a replacement

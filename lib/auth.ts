@@ -3,6 +3,10 @@
 // which is available globally in the Next.js Node.js runtime.
 
 export const AUTH_COOKIE = "chm_auth";
+export const SESSION_METADATA_COOKIE = "chm_session_meta";
+
+// Session duration: 15 minutes
+export const SESSION_DURATION_MS = 15 * 60 * 1000;
 
 // The cookie stores an HMAC of a fixed message keyed by the configured password,
 // never the password itself. Changing APP_PASSWORD invalidates existing sessions.
