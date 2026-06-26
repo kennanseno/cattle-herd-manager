@@ -116,7 +116,9 @@ The app supports two storage backends, selected automatically at runtime:
   have no Drive storage quota); cattle photos are only supported by the local
   backend.
 
-See [.env.example](.env.example) for the required variables.
+See [.env.example](.env.example) for the required variables, and
+[docs/google-sheets-setup.md](docs/google-sheets-setup.md) for a step-by-step
+guide to obtaining them.
 
 ## Deploy to Vercel (Google Sheets)
 
