@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { AppShell } from "@/components/layout/AppShell";
 import { getSettings } from "@/lib/data";
+import { Analytics } from "@vercel/analytics/next";
 import pkg from "../package.json";
 
 const geistSans = Geist({
@@ -42,8 +43,8 @@ export default async function RootLayout({
             {children}
           </AppShell>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
 }
-
