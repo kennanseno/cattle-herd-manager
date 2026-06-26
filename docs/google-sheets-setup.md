@@ -99,6 +99,11 @@ set -a && source .env.sheets && set +a && node_modules/.bin/tsx scripts/test-goo
 Environment Variables**. When pasting the private key there, paste the value
 **without** the surrounding quotes.
 
+> **Lock down the deployment.** To require a password on every page and API
+> route, also set `APP_PASSWORD` in the same Environment Variables screen. Use a
+> long, random value — see [Password protection](../README.md#password-protection)
+> for how the gate and its brute-force lockout work.
+
 ---
 
 ## Troubleshooting

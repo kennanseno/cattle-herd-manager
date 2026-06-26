@@ -173,12 +173,44 @@ Your current data lives in `data/*.csv`. To move it into Google:
 
 - **Run a single instance.** The data model rewrites whole sheets, so multiple
   concurrent instances can clash. Keep one running replica.
-- **No authentication is built in.** Anything deployed is publicly editable —
-  add access control (e.g. Vercel password protection or an auth middleware)
-  before exposing real data.
+- **Lock it down before exposing real data.** A built-in password gate is
+  available — see [Password protection](#password-protection) below. Set
+  `APP_PASSWORD` in Vercel to require a password on every page and API route.
 - **API rate limits.** Google Sheets allows ~60 reads/min per user — ample for
   personal use, not for heavy traffic.
 - **Back up regularly** using the built-in Export.
+
+## Password protection
+
+The app ships with an optional, server-enforced password gate so you can lock a
+deployment down to just yourself.
+
+- Set the `APP_PASSWORD` environment variable to **enable** the gate. When set,
+  every page and API route requires authentication — there is no way to bypass
+  it by navigating directly to a URL, because the check runs server-side before
+  any page renders.
+- Leave `APP_PASSWORD` **unset** to disable the gate entirely (handy for local
+  development).
+
+How it works:
+
+1. Any unauthenticated request to a page is redirected to `/login`; API routes
+   return `401`.
+2. On `/login`, entering the correct password sets a signed, HttpOnly session
+   cookie (an HMAC of the password — the password itself is never stored).
+3. Changing `APP_PASSWORD` invalidates all existing sessions automatically.
+4. **Brute-force throttle.** After 5 failed attempts a client is locked out for
+   5 minutes (the login screen shows a live countdown). This state is held in
+   memory per server process, so it's best-effort on serverless/multi-instance
+   hosts and resets on redeploy — treat it as a speed bump, not a replacement
+   for a strong password.
+
+> **Choose a strong password.** Because throttling is best-effort on Vercel, a
+> long, random `APP_PASSWORD` (20+ characters) is your real protection against
+> brute-force guessing.
+
+To protect your Vercel deployment, add `APP_PASSWORD` under **Project →
+Settings → Environment Variables** and redeploy.
 
 ## Deploy elsewhere
 
