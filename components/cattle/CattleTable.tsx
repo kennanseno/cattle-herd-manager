@@ -40,7 +40,7 @@ function statusBadge(status: Cattle["status"]) {
     deceased: "destructive" as const,
     archived: "outline" as const,
   }
-  return <Badge variant={map[status]}>{status}</Badge>
+  return <Badge variant={map[status]} className="capitalize">{status}</Badge>
 }
 
 function ageLabel(dob: string) {

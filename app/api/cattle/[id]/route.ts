@@ -5,7 +5,7 @@ import type { Cattle } from "@/types";
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const cattle = getCattleByTag(id);
+    const cattle = await getCattleByTag(id);
     if (!cattle) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(cattle);
   } catch {
@@ -20,13 +20,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     // If changing tag number, check uniqueness
     if (body.tagNumber && body.tagNumber !== id) {
-      const all = getAllCattle();
+      const all = await getAllCattle();
       if (all.some((c) => c.tagNumber === body.tagNumber && c.tagNumber !== id)) {
         return NextResponse.json({ error: "Tag number already exists" }, { status: 409 });
       }
     }
 
-    const updated = updateCattle(id, body);
+    const updated = await updateCattle(id, body);
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(updated);
   } catch {
@@ -37,7 +37,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const success = softDeleteCattle(id);
+    const success = await softDeleteCattle(id);
     if (!success) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch {

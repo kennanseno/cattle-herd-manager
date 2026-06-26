@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { AppShell } from "@/components/layout/AppShell";
 import { getSettings } from "@/lib/data";
 import pkg from "../package.json";
 
@@ -21,12 +21,14 @@ export const metadata: Metadata = {
   description: "Manage your cattle herd, health, finances and breeding records",
 };
 
-export default function RootLayout({
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = getSettings();
+  const settings = await getSettings();
 
   return (
     <html
@@ -36,10 +38,9 @@ export default function RootLayout({
     >
       <body className="flex h-full overflow-hidden bg-background">
         <Providers>
-          <Sidebar settings={settings} version={pkg.version} />
-          <main className="flex-1 overflow-y-auto">
+          <AppShell settings={settings} version={pkg.version}>
             {children}
-          </main>
+          </AppShell>
         </Providers>
       </body>
     </html>

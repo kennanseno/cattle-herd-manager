@@ -4,7 +4,7 @@ import type { FarmSettings } from "@/types";
 
 export async function GET() {
   try {
-    return NextResponse.json(getSettings());
+    return NextResponse.json(await getSettings());
   } catch {
     return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
   }
@@ -13,7 +13,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const body = await request.json() as FarmSettings;
-    const saved = saveSettings(body);
+    const saved = await saveSettings(body);
     return NextResponse.json(saved);
   } catch {
     return NextResponse.json({ error: "Failed to save settings" }, { status: 500 });

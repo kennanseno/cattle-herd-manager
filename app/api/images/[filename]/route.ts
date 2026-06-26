@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
 import path from "path";
-
-const IMAGES_DIR = path.join(process.cwd(), "data", "images");
+import { storage } from "@/lib/storage";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ filename: string }> }) {
   try {
@@ -10,26 +8,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ filenam
 
     // Sanitize filename to prevent path traversal
     const sanitized = path.basename(filename);
-    const filepath = path.join(IMAGES_DIR, sanitized);
 
-    if (!fs.existsSync(filepath)) {
+    const image = await storage.getImage(sanitized);
+    if (!image) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const buffer = fs.readFileSync(filepath);
-    const ext = sanitized.split(".").pop()?.toLowerCase() || "jpg";
-    const contentTypeMap: Record<string, string> = {
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      png: "image/png",
-      webp: "image/webp",
-      gif: "image/gif",
-    };
-    const contentType = contentTypeMap[ext] || "image/jpeg";
-
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(image.data), {
       headers: {
-        "Content-Type": contentType,
+        "Content-Type": image.mimeType,
         "Cache-Control": "public, max-age=31536000",
       },
     });

@@ -4,7 +4,7 @@ import type { HealthRecord } from "@/types";
 
 export async function GET() {
   try {
-    return NextResponse.json(getAllHealth());
+    return NextResponse.json(await getAllHealth());
   } catch {
     return NextResponse.json({ error: "Failed to fetch health records" }, { status: 500 });
   }
@@ -16,14 +16,14 @@ export async function POST(request: Request) {
     if (!body.recordDate || !body.vaccinationType || !body.tagNumbers) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
-    const record = createHealth(body);
+    const record = await createHealth(body);
 
     // Auto-create finance expense when a cost is recorded
     const cost = parseFloat(body.cost);
     if (!isNaN(cost) && cost > 0) {
       const tagLabel = body.tagNumbers === "ALL" ? "All Cattle" : body.tagNumbers;
       const firstTag = body.tagNumbers === "ALL" ? "" : body.tagNumbers.split(",")[0].trim();
-      createFinance({
+      await createFinance({
         type: "expense",
         date: body.recordDate,
         category: "Veterinary",

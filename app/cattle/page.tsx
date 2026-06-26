@@ -2,8 +2,10 @@ import { getAllCattle } from "@/lib/data"
 import { CattleTable } from "@/components/cattle/CattleTable"
 import { Beef } from "lucide-react"
 
-export default function CattlePage() {
-  const cattle = getAllCattle()
+export const dynamic = "force-dynamic"
+
+export default async function CattlePage() {
+  const cattle = await getAllCattle()
 
   return (
     <div className="p-6">

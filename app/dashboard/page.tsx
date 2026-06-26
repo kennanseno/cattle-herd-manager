@@ -12,11 +12,15 @@ import {
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { FinanceTrendChart, type YearlyFinanceDatum } from "@/components/dashboard/FinanceTrendChart"
 
-export default function DashboardPage() {
-  const allCattle = getAllCattle()
-  const allBreeding = getAllBreeding()
-  const allFinances = getAllFinances()
-  const settings = getSettings()
+export const dynamic = "force-dynamic"
+
+export default async function DashboardPage() {
+  const [allCattle, allBreeding, allFinances, settings] = await Promise.all([
+    getAllCattle(),
+    getAllBreeding(),
+    getAllFinances(),
+    getSettings(),
+  ])
   const cattleByTag = new Map(allCattle.map((c) => [c.tagNumber, c]))
 
   const activeCattle = allCattle.filter((c) => c.status === "active")

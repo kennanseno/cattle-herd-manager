@@ -15,15 +15,17 @@ import { ArrowLeft, Baby } from "lucide-react"
 import type { Cattle } from "@/types"
 import { getSettings } from "@/lib/data"
 
+export const dynamic = "force-dynamic"
+
 export default async function CattleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params
   const id = decodeURIComponent(rawId)
-  const allCattle = getAllCattle()
+  const allCattle = await getAllCattle()
   const cattle = allCattle.find((c) => c.tagNumber === id)
 
   if (!cattle) notFound()
 
-  const settings = getSettings()
+  const settings = await getSettings()
 
   // Progeny: cattle that have this animal as sire or dam (exclude archived), sorted newest → oldest
   const progeny = allCattle

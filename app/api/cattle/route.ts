@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const includeArchived = searchParams.get("includeArchived") === "true";
-    const all = getAllCattle();
+    const all = await getAllCattle();
     const cattle = includeArchived ? all : all.filter((c) => c.status !== "archived");
     return NextResponse.json(cattle);
   } catch {
@@ -23,16 +23,16 @@ export async function POST(request: Request) {
     }
 
     // Check tag uniqueness
-    const existing = getAllCattle();
+    const existing = await getAllCattle();
     if (existing.some((c) => c.tagNumber === body.tagNumber)) {
       return NextResponse.json({ error: "Tag number already exists" }, { status: 409 });
     }
 
-    const cattle = createCattle(body);
+    const cattle = await createCattle(body);
 
     // Auto-create breeding record if dam is known
     if (cattle.damTagNumber) {
-      autoCreateBreedingForCalf(cattle);
+      await autoCreateBreedingForCalf(cattle);
     }
 
     return NextResponse.json(cattle, { status: 201 });

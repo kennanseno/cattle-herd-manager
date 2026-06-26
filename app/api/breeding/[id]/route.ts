@@ -5,7 +5,7 @@ import type { BreedingRecord } from "@/types";
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const record = getBreedingById(id);
+    const record = await getBreedingById(id);
     if (!record) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(record);
   } catch {
@@ -17,7 +17,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json() as Partial<BreedingRecord>;
-    const updated = updateBreeding(id, body);
+    const updated = await updateBreeding(id, body);
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(updated);
   } catch {
@@ -28,7 +28,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const success = deleteBreeding(id);
+    const success = await deleteBreeding(id);
     if (!success) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch {
