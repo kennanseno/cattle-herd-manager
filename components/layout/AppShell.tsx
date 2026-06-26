@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { SessionExpiryDialog } from "@/components/SessionExpiryDialog";
 import type { FarmSettings } from "@/types";
 
 // Renders the app chrome (sidebar) for normal pages, but a bare full-screen
@@ -9,10 +10,12 @@ import type { FarmSettings } from "@/types";
 export function AppShell({
   settings,
   version,
+  authEnabled,
   children,
 }: {
   settings: FarmSettings;
   version: string;
+  authEnabled: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -25,6 +28,7 @@ export function AppShell({
     <>
       <Sidebar settings={settings} version={version} />
       <main className="flex-1 overflow-y-auto">{children}</main>
+      {authEnabled && <SessionExpiryDialog />}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { AUTH_COOKIE, sessionToken, timingSafeEqual } from "@/lib/auth";
+import { AUTH_COOKIE, SESSION_METADATA_COOKIE, SESSION_DURATION_MS, sessionToken, timingSafeEqual } from "@/lib/auth";
 
 // In-memory brute-force throttle: after MAX_ATTEMPTS failures from one client,
 // lock that client out for LOCKOUT_MS. State lives in the module scope, so it is
@@ -70,13 +70,24 @@ export async function POST(request: Request) {
   attempts.delete(key);
 
   const token = await sessionToken(password);
-  const response = NextResponse.json({ ok: true });
+  const expiresAt = now + SESSION_DURATION_MS;
+  const response = NextResponse.json({ ok: true, expiresAt });
+  
   response.cookies.set(AUTH_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    maxAge: SESSION_DURATION_MS / 1000, // 15 minutes
   });
+  
+  // Store session metadata (not httpOnly so client can access expiration time)
+  response.cookies.set(SESSION_METADATA_COOKIE, JSON.stringify({ issuedAt: now, expiresAt }), {
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_DURATION_MS / 1000, // 15 minutes
+  });
+  
   return response;
 }

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { AppShell } from "@/components/layout/AppShell";
 import { getSettings } from "@/lib/data";
+import { isAuthEnabled } from "@/lib/auth";
 import pkg from "../package.json";
 
 const geistSans = Geist({
@@ -29,6 +30,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const settings = await getSettings();
+  const authEnabled = isAuthEnabled();
 
   return (
     <html
@@ -38,7 +40,7 @@ export default async function RootLayout({
     >
       <body className="flex h-full overflow-hidden bg-background">
         <Providers>
-          <AppShell settings={settings} version={pkg.version}>
+          <AppShell settings={settings} version={pkg.version} authEnabled={authEnabled}>
             {children}
           </AppShell>
         </Providers>
