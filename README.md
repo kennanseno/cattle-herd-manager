@@ -1,4 +1,4 @@
-# Cattle Herd Manager
+# Cattle Herd Manager.
 
 A small herd management app built with Next.js App Router and CSV-backed data storage.
 
