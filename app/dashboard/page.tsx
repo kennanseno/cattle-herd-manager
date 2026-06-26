@@ -61,7 +61,7 @@ export default function DashboardPage() {
   const weaningCalves = activeCattle
     .filter((c) => isCalf(c.dateOfBirth))
     .map((c) => ({ ...c, ageMonths: getAgeInMonths(c.dateOfBirth) }))
-    .filter((c) => c.ageMonths >= 5)
+    .filter((c) => c.ageMonths >= 5 && c.ageMonths <= 7)
     .sort((a, b) => b.ageMonths - a.ageMonths)
 
   // Alerts: females age > 4yr with no calving records OR last calving > 2yr ago
@@ -224,7 +224,7 @@ export default function DashboardPage() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Milk className="h-4 w-4 text-primary" />
             Weaning Alerts ({weaningCalves.length})
-            <InfoTooltip text={"Calves aged 5–7 months are approaching the weaning window.\nCalves over 7 months are overdue for weaning."} />
+            <InfoTooltip text={"Calves aged 5–7 months are in the weaning window.\nCalves over 7 months are assumed to be weaned."} />
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -235,7 +235,6 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {weaningCalves.map((calf) => {
-                const isOverdue = calf.ageMonths > 7
                 const ageStr = `${calf.ageMonths} month${calf.ageMonths !== 1 ? "s" : ""}`
                 return (
                   <Link
@@ -248,8 +247,8 @@ export default function DashboardPage() {
                       {calf.nickname && <span className="text-muted-foreground ml-2">({calf.nickname})</span>}
                       <span className="text-xs text-muted-foreground ml-2">born {formatDate(calf.dateOfBirth)}</span>
                     </span>
-                    <Badge variant={isOverdue ? "warning" : "outline"} className="text-xs">
-                      {isOverdue ? `${ageStr} — overdue` : `${ageStr} — wean soon`}
+                    <Badge variant="outline" className="text-xs">
+                      {`${ageStr} — wean soon`}
                     </Badge>
                   </Link>
                 )
