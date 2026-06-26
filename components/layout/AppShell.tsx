@@ -10,10 +10,12 @@ import type { FarmSettings } from "@/types";
 export function AppShell({
   settings,
   version,
+  authEnabled,
   children,
 }: {
   settings: FarmSettings;
   version: string;
+  authEnabled: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -26,7 +28,7 @@ export function AppShell({
     <>
       <Sidebar settings={settings} version={version} />
       <main className="flex-1 overflow-y-auto">{children}</main>
-      <SessionExpiryDialog />
+      {authEnabled && <SessionExpiryDialog />}
     </>
   );
 }

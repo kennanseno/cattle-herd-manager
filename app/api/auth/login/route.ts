@@ -70,7 +70,6 @@ export async function POST(request: Request) {
   attempts.delete(key);
 
   const token = await sessionToken(password);
-  const now = Date.now();
   const expiresAt = now + SESSION_DURATION_MS;
   const response = NextResponse.json({ ok: true, expiresAt });
   
