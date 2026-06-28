@@ -26,7 +26,7 @@ export function AppShell({
 
   return (
     <>
-      <Sidebar settings={settings} version={version} />
+      <Sidebar settings={settings} version={version} authEnabled={authEnabled} />
       <main className="flex-1 overflow-y-auto">{children}</main>
       {authEnabled && <SessionExpiryDialog />}
     </>

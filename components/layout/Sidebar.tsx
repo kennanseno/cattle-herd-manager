@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Image from "next/image"
 import {
   LayoutDashboard,
@@ -10,6 +10,7 @@ import {
   Baby,
   DollarSign,
   Settings,
+  LogOut,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
@@ -26,10 +27,21 @@ const navItems = [
 interface SidebarProps {
   settings: FarmSettings
   version: string
+  authEnabled: boolean
 }
 
-export function Sidebar({ settings, version }: SidebarProps) {
+export function Sidebar({ settings, version, authEnabled }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } finally {
+      router.push("/login")
+      router.refresh()
+    }
+  }
 
   return (
     <aside className="flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground">
@@ -97,6 +109,16 @@ export function Sidebar({ settings, version }: SidebarProps) {
           </Link>
           <ThemeToggle />
         </div>
+        {authEnabled && (
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-sidebar-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Log out
+          </button>
+        )}
       </div>
     </aside>
   )
