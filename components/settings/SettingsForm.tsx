@@ -120,7 +120,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                   <button
                     type="button"
                     onClick={() => { setLogoPath(""); setLogoPreview("") }}
-                    className="absolute top-1 right-1 rounded-full bg-background/80 p-0.5 hover:bg-background"
+                    className="absolute top-1 right-1 rounded-full bg-background/80 p-0.5 cursor-pointer hover:bg-background"
                   >
                     <X className="h-3 w-3" />
                   </button>

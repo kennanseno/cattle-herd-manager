@@ -134,7 +134,7 @@ export function CattlePhotoGallery({ tagNumber, initialPhotos }: CattlePhotoGall
                   />
                   <button
                     onClick={() => setDeleteTarget(photo)}
-                    className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-red-600"
                     aria-label="Remove photo"
                   >
                     <X className="h-3 w-3" />
