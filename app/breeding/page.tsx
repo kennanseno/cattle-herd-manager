@@ -8,7 +8,7 @@ export default async function BreedingPage() {
   const [records, allCattle] = await Promise.all([getAllBreeding(), getAllCattle()])
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <HeartPulse className="h-5 w-5 text-primary" />

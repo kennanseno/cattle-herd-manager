@@ -8,7 +8,7 @@ export default async function FinancesPage() {
   const [records, allCattle] = await Promise.all([getAllFinances(), getAllCattle()])
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <DollarSign className="h-5 w-5 text-primary" />

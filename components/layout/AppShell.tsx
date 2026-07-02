@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileNav } from "@/components/layout/MobileNav";
 import { SessionExpiryDialog } from "@/components/SessionExpiryDialog";
 import type { FarmSettings } from "@/types";
 
@@ -27,7 +28,10 @@ export function AppShell({
   return (
     <>
       <Sidebar settings={settings} version={version} authEnabled={authEnabled} />
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <MobileNav settings={settings} version={version} authEnabled={authEnabled} />
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
       {authEnabled && <SessionExpiryDialog />}
     </>
   );
