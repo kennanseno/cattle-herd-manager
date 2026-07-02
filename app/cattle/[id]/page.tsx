@@ -66,14 +66,14 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       {/* Back */}
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link href="/cattle"><ArrowLeft className="mr-2 h-4 w-4" />Back to Herd</Link>
       </Button>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-6">
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="relative h-20 w-20 rounded-xl overflow-hidden border bg-muted flex items-center justify-center text-3xl shrink-0">
             {cattle.imagePath ? (

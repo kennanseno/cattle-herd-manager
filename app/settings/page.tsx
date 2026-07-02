@@ -9,7 +9,7 @@ export default async function SettingsPage() {
   const settings = await getSettings()
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Settings className="h-5 w-5 text-primary" />

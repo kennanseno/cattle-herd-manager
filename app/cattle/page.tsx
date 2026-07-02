@@ -8,7 +8,7 @@ export default async function CattlePage() {
   const cattle = await getAllCattle()
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Beef className="h-5 w-5 text-primary" />

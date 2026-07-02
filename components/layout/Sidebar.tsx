@@ -30,7 +30,15 @@ interface SidebarProps {
   authEnabled: boolean
 }
 
-export function Sidebar({ settings, version, authEnabled }: SidebarProps) {
+// The inner sidebar UI, shared between the fixed desktop sidebar and the
+// mobile slide-out drawer. `onNavigate` lets the mobile drawer close itself
+// when a navigation link or action is activated.
+export function SidebarContent({
+  settings,
+  version,
+  authEnabled,
+  onNavigate,
+}: SidebarProps & { onNavigate?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -38,13 +46,14 @@ export function Sidebar({ settings, version, authEnabled }: SidebarProps) {
     try {
       await fetch("/api/auth/logout", { method: "POST" })
     } finally {
+      onNavigate?.()
       router.push("/login")
       router.refresh()
     }
   }
 
   return (
-    <aside className="flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground">
+    <div className="flex h-full w-full flex-col bg-sidebar text-sidebar-foreground">
       {/* Farm Logo & Name */}
       <div className="flex items-center gap-3 px-5 py-6 border-b border-sidebar-border">
         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-sidebar-accent flex items-center justify-center">
@@ -78,6 +87,7 @@ export function Sidebar({ settings, version, authEnabled }: SidebarProps) {
             <Link
               key={href}
               href={href}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
@@ -97,6 +107,7 @@ export function Sidebar({ settings, version, authEnabled }: SidebarProps) {
         <div className="flex items-center justify-between">
           <Link
             href="/settings"
+            onClick={onNavigate}
             className={cn(
               "flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors",
               pathname === "/settings"
@@ -120,6 +131,16 @@ export function Sidebar({ settings, version, authEnabled }: SidebarProps) {
           </button>
         )}
       </div>
+    </div>
+  )
+}
+
+// Fixed sidebar for desktop viewports. Hidden on small screens where the
+// mobile drawer takes over.
+export function Sidebar({ settings, version, authEnabled }: SidebarProps) {
+  return (
+    <aside className="hidden w-64 shrink-0 lg:flex">
+      <SidebarContent settings={settings} version={version} authEnabled={authEnabled} />
     </aside>
   )
 }
