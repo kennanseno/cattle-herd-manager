@@ -47,7 +47,9 @@ export default function LoginPage() {
       });
       if (res.ok) {
         const from = new URLSearchParams(window.location.search).get("from");
-        window.location.assign(from && from.startsWith("/") ? from : "/");
+        // Only allow same-origin, non-protocol-relative paths to avoid open redirects.
+        const safe = from && from.startsWith("/") && !from.startsWith("//") && !from.startsWith("/\\");
+        window.location.assign(safe ? from : "/");
         return;
       }
       const data = await res.json().catch(() => ({}));

@@ -125,7 +125,14 @@ export function useSessionExpiry(): UseSessionExpiryReturn {
   // Redirect to login if expired
   useEffect(() => {
     if (isExpired) {
-      router.push("/login?expired=true");
+      // Preserve the current location so the user returns here after logging
+      // back in (the login page reads the `from` query param).
+      const current = window.location.pathname + window.location.search;
+      const params = new URLSearchParams({ expired: "true" });
+      if (current && current.startsWith("/") && !current.startsWith("/login")) {
+        params.set("from", current);
+      }
+      router.push(`/login?${params.toString()}`);
     }
   }, [isExpired, router]);
 
