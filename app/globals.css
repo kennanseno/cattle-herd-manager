@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Bind Tailwind's `dark:` variant to the `.dark` class toggled by next-themes
+   instead of the default `prefers-color-scheme` media query. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
