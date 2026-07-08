@@ -20,7 +20,20 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
     try {
       // Dynamically import to avoid SSR issues with @react-pdf/renderer
       const { generateCattlePDF } = await import("@/components/cattle/CattlePDFDocument")
-      await generateCattlePDF(cattle, allCattle, settings)
+      const certificateId = crypto.randomUUID()
+      const generatedAt = new Date().toISOString()
+      await generateCattlePDF(cattle, allCattle, settings, certificateId, generatedAt)
+
+      // Log the generation so it appears in the certificate history.
+      try {
+        await fetch(`/api/cattle/${encodeURIComponent(cattle.tagNumber)}/pdf-exports`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: certificateId, generatedAt }),
+        })
+      } catch {
+        // The PDF already downloaded; failing to log history shouldn't block the user.
+      }
     } catch (err) {
       console.error(err)
       toast.error("Failed to generate PDF")

@@ -72,3 +72,9 @@ export interface FarmSettings {
   website: string;
   logoPath: string;
 }
+
+export interface PdfExportRecord {
+  id: string; // UUID printed on the certificate as its unique identifier
+  tagNumber: string; // cattle the certificate was generated for
+  generatedAt: string; // ISO timestamp of when the PDF was generated
+}
