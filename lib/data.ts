@@ -1,7 +1,7 @@
 import { storage } from './storage';
 import { calcCalvingDate, calcBreedDate, nowISO } from './utils';
 import type {
-  Cattle, BreedingRecord, HealthRecord, FinanceRecord, FarmSettings,
+  Cattle, BreedingRecord, HealthRecord, FinanceRecord, FarmSettings, PdfExportRecord,
 } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -196,4 +196,31 @@ export async function getSettings(): Promise<FarmSettings> {
 export async function saveSettings(data: FarmSettings): Promise<FarmSettings> {
   await storage.writeSettings(data);
   return data;
+}
+
+// ─── PDF EXPORTS ─────────────────────────────────────────────────────────────
+
+export async function getAllPdfExports(): Promise<PdfExportRecord[]> {
+  return storage.readTable<PdfExportRecord>('pdfExports');
+}
+
+/** Certificate export history for one animal, newest first. */
+export async function getPdfExportsByTag(tagNumber: string): Promise<PdfExportRecord[]> {
+  return (await getAllPdfExports())
+    .filter((e) => e.tagNumber === tagNumber)
+    .sort((a, b) => b.generatedAt.localeCompare(a.generatedAt));
+}
+
+/** Append a certificate generation event to the export log. */
+export async function recordPdfExport(
+  data: { id: string; tagNumber: string; generatedAt?: string },
+): Promise<PdfExportRecord> {
+  const all = await getAllPdfExports();
+  const record: PdfExportRecord = {
+    id: data.id || uuidv4(),
+    tagNumber: data.tagNumber,
+    generatedAt: data.generatedAt || nowISO(),
+  };
+  await storage.writeTable('pdfExports', [...all, record]);
+  return record;
 }

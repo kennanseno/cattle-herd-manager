@@ -1,4 +1,4 @@
-export type TableName = 'cattle' | 'breeding' | 'health' | 'finances';
+export type TableName = 'cattle' | 'breeding' | 'health' | 'finances' | 'pdfExports';
 
 export interface StoredImage {
   data: Buffer;

@@ -79,6 +79,9 @@ const styles = StyleSheet.create({
   sigLine: { borderTop: "1pt solid #333", paddingTop: 5 },
   sigName: { fontSize: 10.5, fontFamily: "Times-Bold" },
   sigRole: { fontSize: 8.5, fontFamily: "Times-Italic", color: "#888", marginTop: 2 },
+
+  // Certificate identifier (bottom-left of the frame)
+  certId: { marginTop: 3, fontSize: 6.5, fontFamily: "Times-Roman", color: "#999", letterSpacing: 0.3 },
 })
 
 function lookupCattle(tag: string | undefined, allCattle: Cattle[]): Cattle | undefined {
@@ -165,10 +168,12 @@ function PedigreeBlock({
   )
 }
 
-function CattlePDFDocument({ cattle, allCattle, settings }: {
+function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generatedAt }: {
   cattle: Cattle
   allCattle: Cattle[]
   settings: FarmSettings
+  certificateId: string
+  generatedAt: string
 }) {
   const sire = lookupCattle(cattle.sireTagNumber, allCattle)
   const dam = lookupCattle(cattle.damTagNumber, allCattle)
@@ -288,7 +293,7 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
         <View style={styles.footer} fixed>
           <Text style={styles.legalText}>
             This certificate is issued for whatever legal purpose it may serve.{"  "}
-            Given this {formatDate(new Date().toISOString().slice(0, 10))}.
+            Given this {formatDate(generatedAt.slice(0, 10))}.
           </Text>
           <View style={styles.footerRow}>
             <View style={styles.sigBlock}>
@@ -296,9 +301,15 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
                 <Text style={styles.sigName}>{settings.ownerName || "Owner"}</Text>
               </View>
               <Text style={styles.sigRole}>Farm Owner{settings.farmName ? ` — ${settings.farmName}` : ""}</Text>
+              {/* Unique certificate identifier for verification / tracking */}
+              <Text style={styles.certId} fixed>
+              Certificate ID: {certificateId}
+              </Text>
             </View>
           </View>
         </View>
+
+
       </Page>
     </Document>
   )
@@ -307,10 +318,18 @@ function CattlePDFDocument({ cattle, allCattle, settings }: {
 export async function generateCattlePDF(
   cattle: Cattle,
   allCattle: Cattle[],
-  settings: FarmSettings
+  settings: FarmSettings,
+  certificateId: string,
+  generatedAt: string,
 ): Promise<void> {
   const blob = await pdf(
-    <CattlePDFDocument cattle={cattle} allCattle={allCattle} settings={settings} />
+    <CattlePDFDocument
+      cattle={cattle}
+      allCattle={allCattle}
+      settings={settings}
+      certificateId={certificateId}
+      generatedAt={generatedAt}
+    />
   ).toBlob()
 
   const url = URL.createObjectURL(blob)
