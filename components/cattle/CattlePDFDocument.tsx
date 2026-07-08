@@ -334,8 +334,8 @@ export async function generateCattlePDF(
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
+  a.download = `cattle-${cattle.tagNumber}-${new Date().toISOString().slice(0, 10)}-${certificateId}.pdf`
   a.href = url
-  a.download = `cattle-${cattle.tagNumber}-${new Date().toISOString().slice(0, 10)}.pdf`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
