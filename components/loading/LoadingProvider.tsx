@@ -1,13 +1,16 @@
 "use client"
 
 import { useEffect, useState, createContext, useContext } from "react"
+import { usePathname } from "next/navigation"
 import { LoadingOverlay } from "@/components/loading/LoadingOverlay"
 
 const LoadingContext = createContext(false)
 
 export function LoadingProvider({ children }: { children: React.ReactNode }) {
   const [activeCount, setActiveCount] = useState(0)
-  const isLoading = activeCount > 0
+  const [navigationActive, setNavigationActive] = useState(false)
+  const pathname = usePathname()
+  const isLoading = activeCount > 0 || navigationActive
 
   useEffect(() => {
     const originalFetch = window.fetch.bind(window)
@@ -33,6 +36,41 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
     window.fetch = patchFetch as typeof window.fetch
     return () => {
       window.fetch = originalFetch
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!navigationActive) {
+      return
+    }
+    setNavigationActive(false)
+  }, [pathname, navigationActive])
+
+  useEffect(() => {
+    const originalPushState = window.history.pushState
+    const originalReplaceState = window.history.replaceState
+
+    const startNavigation = () => {
+      Promise.resolve().then(() => setNavigationActive(true))
+    }
+
+    window.history.pushState = function (data: any, title: string, url?: string | URL | null) {
+      startNavigation()
+      return originalPushState.apply(this, [data, title, url])
+    }
+
+    window.history.replaceState = function (data: any, title: string, url?: string | URL | null) {
+      startNavigation()
+      return originalReplaceState.apply(this, [data, title, url])
+    }
+
+    const onPopState = () => startNavigation()
+    window.addEventListener("popstate", onPopState)
+
+    return () => {
+      window.history.pushState = originalPushState
+      window.history.replaceState = originalReplaceState
+      window.removeEventListener("popstate", onPopState)
     }
   }, [])
 
