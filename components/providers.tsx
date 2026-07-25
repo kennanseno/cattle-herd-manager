@@ -3,6 +3,7 @@
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { type ThemeProviderProps } from "next-themes"
 import { Toaster } from "@/components/ui/sonner"
+import { LoadingProvider } from "@/components/loading/LoadingProvider"
 
 export function Providers({ children, ...props }: ThemeProviderProps) {
   return (
@@ -13,8 +14,10 @@ export function Providers({ children, ...props }: ThemeProviderProps) {
       disableTransitionOnChange
       {...props}
     >
-      {children}
-      <Toaster richColors closeButton />
+      <LoadingProvider>
+        {children}
+        <Toaster richColors closeButton />
+      </LoadingProvider>
     </NextThemesProvider>
   )
 }
