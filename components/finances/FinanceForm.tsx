@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
 import { Loader2, Info, ChevronsUpDown, Check } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,6 +33,7 @@ const CATEGORIES_EXPENSE = ["Feed", "Veterinary", "Medicine", "Labor", "Equipmen
 
 const schema = z.object({
   date: z.string().min(1, "Date is required"),
+  dateTo: z.string().optional().default(""),
   type: z.enum(["income", "expense"]),
   category: z.string().min(1, "Category is required"),
   amount: z.string().min(1, "Amount is required"),
@@ -39,6 +41,13 @@ const schema = z.object({
   notes: z.string().optional().default(""),
   relatedTagNumber: z.string().optional().default(""),
 }).superRefine((data, ctx) => {
+  if (data.dateTo && data.dateTo < data.date) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "End date must be on or after the start date",
+      path: ["dateTo"],
+    })
+  }
   if (data.type === "income" && data.category === "Cattle Sale" && !data.relatedTagNumber?.trim()) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -63,11 +72,13 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
   const isEditing = !!record
   const [saving, setSaving] = useState(false)
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false)
+  const [rangeMode, setRangeMode] = useState(false)
 
   const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       date: record?.date || "",
+      dateTo: record?.dateTo || "",
       type: record?.type || "expense",
       category: record?.category || "",
       amount: record?.amount?.toString() || "",
@@ -79,8 +90,11 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
 
   useEffect(() => {
     if (open) {
+      const hasRange = !!record?.dateTo
+      setRangeMode(hasRange)
       reset({
         date: record?.date || "",
+        dateTo: record?.dateTo || "",
         type: record?.type || "expense",
         category: record?.category || "",
         amount: record?.amount?.toString() || "",
@@ -92,12 +106,26 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
   }, [open, record])
 
   const txType = watch("type")
+
+  function handleRangeModeToggle(checked: boolean) {
+    setRangeMode(checked)
+    if (!checked) setValue("dateTo", "")
+  }
   const txCategory = watch("category")
   const relatedTag = watch("relatedTagNumber")
   const isCattleSale = txType === "income" && txCategory === "Cattle Sale"
   const categories = txType === "income" ? CATEGORIES_INCOME : CATEGORIES_EXPENSE
 
   async function onSubmit(values: FormValues) {
+    if (rangeMode && !values.dateTo) {
+      toast.error("Please enter an end date for the transaction range")
+      return
+    }
+
+    if (!rangeMode) {
+      values.dateTo = ""
+    }
+
     setSaving(true)
     try {
       const url = isEditing ? `/api/finances/${record.id}` : "/api/finances"
@@ -148,18 +176,51 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
             </RadioGroup>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date *</Label>
-              <Input id="date" type="date" {...register("date")} />
-              {errors.date && <p className="text-xs text-destructive">{errors.date.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount (₱) *</Label>
-              <Input id="amount" type="number" step="0.01" {...register("amount")} placeholder="0.00" />
-              {errors.amount && <p className="text-xs text-destructive">{errors.amount.message}</p>}
-            </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="rangeMode"
+              checked={rangeMode}
+              onCheckedChange={(checked) => handleRangeModeToggle(!!checked)}
+            />
+            <Label htmlFor="rangeMode" className="cursor-pointer font-normal text-sm">
+              This transaction spans multiple days
+            </Label>
           </div>
+
+          {!rangeMode ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date">Date *</Label>
+                <Input id="date" type="date" {...register("date")} />
+                {errors.date && <p className="text-xs text-destructive">{errors.date.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount (₱) *</Label>
+                <Input id="amount" type="number" step="0.01" {...register("amount")} placeholder="0.00" />
+                {errors.amount && <p className="text-xs text-destructive">{errors.amount.message}</p>}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date From *</Label>
+                  <Input id="date" type="date" {...register("date")} />
+                  {errors.date && <p className="text-xs text-destructive">{errors.date.message}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dateTo">Date To *</Label>
+                  <Input id="dateTo" type="date" {...register("dateTo")} />
+                  {errors.dateTo && <p className="text-xs text-destructive">{errors.dateTo.message}</p>}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount (₱) *</Label>
+                <Input id="amount" type="number" step="0.01" {...register("amount")} placeholder="0.00" />
+                {errors.amount && <p className="text-xs text-destructive">{errors.amount.message}</p>}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Category *</Label>

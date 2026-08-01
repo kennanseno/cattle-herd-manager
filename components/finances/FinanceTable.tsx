@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { FinanceForm } from "@/components/finances/FinanceForm"
 import type { FinanceRecord, Cattle } from "@/types"
-import { formatDate, formatPHP, cn } from "@/lib/utils"
+import { formatDateRange, formatPHP, cn } from "@/lib/utils"
 import { PaginationBar } from "@/components/ui/pagination-bar"
 
 type SortKey = "date" | "type" | "category" | "amount"
@@ -35,7 +35,7 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [search, setSearch] = useState("")
-  const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString())
+  const [filterYear, setFilterYear] = useState("all")
   const PAGE_SIZE = 20
   const [page, setPage] = useState(1)
   const [formOpen, setFormOpen] = useState(false)
@@ -51,12 +51,13 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
     setPage(1)
   }
 
-  const years = Array.from(new Set(records.map((r) => r.date.slice(0, 4)))).sort().reverse()
+  const years = Array.from(new Set(records.flatMap((r) => [r.date.slice(0, 4), r.dateTo?.slice(0, 4)].filter((year): year is string => Boolean(year))))).sort().reverse()
   if (filterYear !== "all" && !years.includes(filterYear)) years.unshift(filterYear)
 
   const filtered = records
     .filter((r) => {
-      if (filterYear !== "all" && !r.date.startsWith(filterYear)) return false
+      const recordYears = [r.date.slice(0, 4), r.dateTo?.slice(0, 4)].filter((year): year is string => Boolean(year))
+      if (filterYear !== "all" && !recordYears.includes(filterYear)) return false
       if (!search) return true
       const q = search.toLowerCase()
       return r.category.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q)
@@ -86,7 +87,7 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
     const searchLabel = search ? ` · Search: "${search}"` : ""
     const rows = sorted.map((r) => `
       <tr>
-        <td>${formatDate(r.date)}</td>
+        <td>${formatDateRange(r.date, r.dateTo)}</td>
         <td><span class="${r.type === "income" ? "badge-income" : "badge-expense"}">${r.type}</span></td>
         <td>${r.category}</td>
         <td>${r.description ? r.description.replace(/</g, "&lt;").replace(/>/g, "&gt;") : "\u2014"}</td>
@@ -232,7 +233,7 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
             ) : (
               paginated.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell>{formatDate(r.date)}</TableCell>
+                  <TableCell>{formatDateRange(r.date, r.dateTo)}</TableCell>
                   <TableCell>
                     <Badge variant={r.type === "income" ? "success" : "destructive"} className="capitalize">
                       {r.type}

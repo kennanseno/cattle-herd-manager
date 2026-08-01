@@ -43,6 +43,19 @@ export function formatDate(dateStr: string): string {
   }
 }
 
+export function formatDateRange(startDate: string, endDate?: string): string {
+  if (!startDate) return '—';
+  if (!endDate) return formatDate(startDate);
+
+  try {
+    const start = format(parseISO(startDate), 'MMMM dd, yyyy');
+    const end = format(parseISO(endDate), 'MMMM dd, yyyy');
+    return start === end ? start : `${start} – ${end}`;
+  } catch {
+    return [startDate, endDate].filter(Boolean).join(' – ');
+  }
+}
+
 export function daysUntil(dateStr: string): number {
   return differenceInDays(parseISO(dateStr), new Date());
 }

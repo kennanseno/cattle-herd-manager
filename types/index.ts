@@ -53,6 +53,7 @@ export type FinanceType = 'income' | 'expense';
 export interface FinanceRecord {
   id: string;
   date: string;
+  dateTo?: string;
   type: FinanceType;
   category: string;
   amount: string;
