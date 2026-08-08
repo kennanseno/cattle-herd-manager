@@ -213,13 +213,14 @@ export async function getPdfExportsByTag(tagNumber: string): Promise<PdfExportRe
 
 /** Append a certificate generation event to the export log. */
 export async function recordPdfExport(
-  data: { id: string; tagNumber: string; generatedAt?: string },
+  data: { id: string; tagNumber: string; generatedAt?: string; notes?: string },
 ): Promise<PdfExportRecord> {
   const all = await getAllPdfExports();
   const record: PdfExportRecord = {
     id: data.id || uuidv4(),
     tagNumber: data.tagNumber,
     generatedAt: data.generatedAt || nowISO(),
+    notes: data.notes?.trim() || "",
   };
   await storage.writeTable('pdfExports', [...all, record]);
   return record;

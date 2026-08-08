@@ -78,4 +78,5 @@ export interface PdfExportRecord {
   id: string; // UUID printed on the certificate as its unique identifier
   tagNumber: string; // cattle the certificate was generated for
   generatedAt: string; // ISO timestamp of when the PDF was generated
+  notes: string; // optional context for why the PDF was exported
 }

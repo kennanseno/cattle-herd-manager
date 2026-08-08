@@ -118,6 +118,11 @@ export function CattleDetailActions({ cattle, allCattle }: CattleDetailActionsPr
                     <p className="text-sm font-medium">
                       {new Date(e.generatedAt).toLocaleString()}
                     </p>
+                    {e.notes ? (
+                      <p className="truncate text-xs text-muted-foreground" title={e.notes}>
+                        {e.notes}
+                      </p>
+                    ) : null}
                     <p className="truncate font-mono text-xs text-muted-foreground" title={e.id}>
                       {e.id}
                     </p>

@@ -17,7 +17,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const cattle = await getCattleByTag(id);
     if (!cattle) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const body = await request.json() as { id?: string; generatedAt?: string };
+    const body = await request.json() as { id?: string; generatedAt?: string; notes?: string };
     if (!body.id) {
       return NextResponse.json({ error: "Missing certificate id" }, { status: 400 });
     }
@@ -26,6 +26,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       id: body.id,
       tagNumber: id,
       generatedAt: body.generatedAt,
+      notes: body.notes,
     });
     return NextResponse.json(record, { status: 201 });
   } catch {
