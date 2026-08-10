@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { CattleForm } from "@/components/cattle/CattleForm"
 import type { Cattle } from "@/types"
-import { formatDate, getAgeInMonths, getAgeInYears, isCalf, cn } from "@/lib/utils"
+import { formatDate, isCalf, cn, formatAgeWithMonths } from "@/lib/utils"
 import { PaginationBar } from "@/components/ui/pagination-bar"
 
 type SortKey = "tagNumber" | "dateOfBirth" | "sex" | "breed" | "status"
@@ -44,14 +44,7 @@ function statusBadge(status: Cattle["status"]) {
 }
 
 function ageLabel(dob: string) {
-  const months = getAgeInMonths(dob)
-  if (months < 1) return "< 1 mo"
-  if (months < 12) return `${months} mo`
-  const years = getAgeInYears(dob)
-  const remainingMonths = months - years * 12
-  return remainingMonths > 0
-    ? `${years} yr${years !== 1 ? "s" : ""} ${remainingMonths} mo`
-    : `${years} yr${years !== 1 ? "s" : ""}`
+  return formatAgeWithMonths(dob)
 }
 
 interface CattleTableProps {

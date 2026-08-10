@@ -1,7 +1,7 @@
 import {
   getAllCattle, getAllBreeding, getAllFinances, getSettings,
 } from "@/lib/data"
-import { isCalf, daysUntil, formatDate, formatPHP, getAgeInYears, getAgeInMonths, calcCalvingDate } from "@/lib/utils"
+import { isCalf, daysUntil, formatDate, formatPHP, getAgeInYears, getAgeInMonths, calcCalvingDate, formatAgeWithMonths } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -292,8 +292,8 @@ export default async function DashboardPage() {
                         <span className="font-mono font-semibold">{cow.tagNumber}</span>
                         {cow.nickname && <span className="text-muted-foreground ml-2">({cow.nickname})</span>}
                       </span>
-                      <Badge variant="warning" className="text-xs">
-                        {getAgeInYears(cow.dateOfBirth)}y old
+                        <Badge variant="warning" className="text-xs">
+                        {formatAgeWithMonths(cow.dateOfBirth)} old
                       </Badge>
                     </Link>
                   ))}

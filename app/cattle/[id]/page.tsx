@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { getAllCattle } from "@/lib/data"
-import { formatDate, getAgeInYears, getAgeInMonths, isCalf } from "@/lib/utils"
+import { formatDate, getAgeInYears, getAgeInMonths, isCalf, formatAgeWithMonths } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -43,20 +43,13 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
       const days = Math.round((new Date().getTime() - new Date(dob).getTime()) / 86_400_000)
       return `${days}d old`
     }
-    if (months < 12) return `${months}mo old`
-    const years = Math.floor(months / 12)
-    const rem = months % 12
-    return rem > 0 ? `${years}yr ${rem}mo old` : `${years}yr old`
+    return `${formatAgeWithMonths(dob)} old`
   }
 
   const ageMonths = getAgeInMonths(cattle.dateOfBirth)
   const ageYears = getAgeInYears(cattle.dateOfBirth)
   const remainingMonths = ageMonths - ageYears * 12
-  const ageLabel = ageMonths < 12
-    ? `${ageMonths} month${ageMonths !== 1 ? "s" : ""}`
-    : remainingMonths > 0
-      ? `${ageYears} year${ageYears !== 1 ? "s" : ""} ${remainingMonths} month${remainingMonths !== 1 ? "s" : ""}`
-      : `${ageYears} year${ageYears !== 1 ? "s" : ""}`
+  const ageLabel = formatAgeWithMonths(cattle.dateOfBirth)
 
   const statusColors: Record<Cattle["status"], string> = {
     active: "success",

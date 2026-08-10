@@ -2,7 +2,7 @@ import {
   Document, Page, Text, View, StyleSheet, pdf, Image,
 } from "@react-pdf/renderer"
 import type { Cattle, FarmSettings } from "@/types"
-import { formatDate, getAgeInYears, getAgeInMonths } from "@/lib/utils"
+import { formatDate, getAgeInYears, getAgeInMonths, formatAgeWithMonths } from "@/lib/utils"
 
 const ACCENT = "#1f472f"
 const GOLD = "#9a7b2f"
@@ -182,8 +182,7 @@ function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generat
   const grandsire_d = lookupCattle(dam?.sireTagNumber, allCattle)
   const granddam_d = lookupCattle(dam?.damTagNumber, allCattle)
 
-  const ageMonths = getAgeInMonths(cattle.dateOfBirth)
-  const ageLabel = ageMonths < 12 ? `${ageMonths} months` : `${getAgeInYears(cattle.dateOfBirth)} years`
+  const ageLabel = formatAgeWithMonths(cattle.dateOfBirth)
 
   return (
     <Document>

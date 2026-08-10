@@ -30,6 +30,18 @@ export function getAgeInMonths(dob: string): number {
   return differenceInMonths(new Date(), parseISO(dob));
 }
 
+export function formatAgeWithMonths(dob: string): string {
+  const months = getAgeInMonths(dob)
+  if (months < 1) return "< 1 mo"
+  if (months < 12) return `${months} mo`
+  const years = Math.floor(months / 12)
+  const rem = months % 12
+  const yearsStr = `${years} yr${years !== 1 ? "s" : ""}`
+  const remStr = rem > 0 ? ` ${rem} mo` : ""
+  const totalMonths = `${months} mo`
+  return `${yearsStr}${remStr} (${totalMonths})`
+}
+
 export function isCalf(dob: string): boolean {
   return getAgeInMonths(dob) <= 12;
 }
