@@ -351,7 +351,9 @@ export async function generateCattlePDF(
     pdfDoc.setKeywords(keywords)
 
     const modified = await pdfDoc.save()
-    outBlob = new Blob([modified], { type: 'application/pdf' })
+    // `modified` is a Uint8Array; convert to ArrayBuffer slice to satisfy Blob's type expectations
+    const modifiedArrayBuffer = modified.buffer.slice(modified.byteOffset, modified.byteOffset + modified.byteLength)
+    outBlob = new Blob([modifiedArrayBuffer], { type: 'application/pdf' })
   } catch (err) {
     // If pdf-lib isn't available or processing fails, continue with original blob
     // This should not block the download.
