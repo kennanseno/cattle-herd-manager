@@ -185,7 +185,12 @@ function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generat
   const ageLabel = formatAgeWithMonths(cattle.dateOfBirth)
 
   return (
-    <Document>
+    <Document
+      title={certificateId}
+      author={settings.ownerName || settings.farmName || ""}
+      subject={`Certificate of Ownership — ${cattle.tagNumber}${settings.farmName ? ` — ${settings.farmName}` : ""}`}
+      keywords={`cattle, certificate, ${cattle.tagNumber}, ${cattle.breed || ""}, ${settings.farmName || ""}`}
+    >
       <Page size="A4" style={styles.page}>
         {/* Decorative double frame */}
         <View style={styles.frameOuter} fixed />
@@ -331,7 +336,30 @@ export async function generateCattlePDF(
     />
   ).toBlob()
 
-  const url = URL.createObjectURL(blob)
+  // Try to enrich PDF metadata using pdf-lib; fall back to the original blob if something fails.
+  let outBlob: Blob = blob
+  try {
+    const arrayBuffer = await blob.arrayBuffer()
+    const { PDFDocument } = await import('pdf-lib')
+    const pdfDoc = await PDFDocument.load(arrayBuffer)
+
+    // Set standard metadata fields
+    pdfDoc.setTitle(certificateId)
+    pdfDoc.setAuthor(settings.ownerName || settings.farmName || "")
+    pdfDoc.setSubject(`Certificate of Ownership — ${cattle.tagNumber}${settings.farmName ? ` — ${settings.farmName}` : ""}`)
+    const keywords = ["cattle", "certificate", cattle.tagNumber, cattle.breed || "", settings.farmName || ""].filter(Boolean)
+    pdfDoc.setKeywords(keywords)
+
+    const modified = await pdfDoc.save()
+    outBlob = new Blob([modified], { type: 'application/pdf' })
+  } catch (err) {
+    // If pdf-lib isn't available or processing fails, continue with original blob
+    // This should not block the download.
+    // eslint-disable-next-line no-console
+    console.warn('Failed to embed PDF metadata, continuing with original PDF.', err)
+  }
+
+  const url = URL.createObjectURL(outBlob)
   const a = document.createElement("a")
   a.download = `cattle-${cattle.tagNumber}-${new Date().toISOString().slice(0, 10)}-${certificateId}.pdf`
   a.href = url
