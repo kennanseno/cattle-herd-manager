@@ -1,1 +1,1 @@
-tagNumber,dateOfBirth,sex,breed,sireTagNumber,damTagNumber,nickname,birthWeight,weaningWeight,status,notes,imagePath,createdAt,updatedAt,photos
+tagNumber,nickname,dateOfBirth,sireTagNumber,damTagNumber,sex,breed,birthWeight,weaningWeight,status,notes,imagePath,photos,createdAt,updatedAt

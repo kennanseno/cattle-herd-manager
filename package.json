@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start -p 9999",
     "lint": "eslint",
+    "validate:schema": "node scripts/validate-schema.mjs",
     "pm2:start": "pm2 start \"npm run dev\" --name cattle-herd && pm2 save",
     "pm2:stop": "pm2 stop cattle-herd",
     "pm2:restart": "pm2 restart cattle-herd",
