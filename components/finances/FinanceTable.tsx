@@ -21,6 +21,20 @@ import { PaginationBar } from "@/components/ui/pagination-bar"
 
 type SortKey = "date" | "type" | "category" | "amount"
 
+function getCategoryTotals(records: FinanceRecord[], type: FinanceRecord["type"]) {
+  const totals = new Map<string, number>()
+
+  records
+    .filter((record) => record.type === type)
+    .forEach((record) => {
+      const category = record.category.trim() || "Uncategorized"
+      totals.set(category, (totals.get(category) ?? 0) + parseFloat(record.amount || "0"))
+    })
+
+  return Array.from(totals, ([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount)
+}
+
 function SortIcon({ k, sortKey, dir }: { k: string; sortKey: string; dir: "asc" | "desc" }) {
   if (sortKey !== k) return null
   return dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
@@ -80,6 +94,8 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
 
   const totalIncome = filtered.filter((r) => r.type === "income").reduce((s, r) => s + parseFloat(r.amount || "0"), 0)
   const totalExpense = filtered.filter((r) => r.type === "expense").reduce((s, r) => s + parseFloat(r.amount || "0"), 0)
+  const incomeByCategory = getCategoryTotals(filtered, "income")
+  const expenseByCategory = getCategoryTotals(filtered, "expense")
   const netBalance = totalIncome - totalExpense
 
   function exportToPDF() {
@@ -157,6 +173,16 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
             <span className="text-sm font-medium">Income</span>
           </div>
           <p className="text-xl font-bold text-green-600">{formatPHP(totalIncome)}</p>
+          {incomeByCategory.length > 0 && (
+            <div className="mt-3 space-y-1.5 border-t pt-3">
+              {incomeByCategory.map(({ category, amount }) => (
+                <div key={category} className="flex items-center justify-between gap-2 text-xs">
+                  <span className="truncate text-muted-foreground">{category}</span>
+                  <span className="shrink-0 font-medium text-green-600">{formatPHP(amount)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center gap-2 text-red-600 mb-1">
@@ -164,6 +190,16 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
             <span className="text-sm font-medium">Expenses</span>
           </div>
           <p className="text-xl font-bold text-red-600">{formatPHP(totalExpense)}</p>
+          {expenseByCategory.length > 0 && (
+            <div className="mt-3 space-y-1.5 border-t pt-3">
+              {expenseByCategory.map(({ category, amount }) => (
+                <div key={category} className="flex items-center justify-between gap-2 text-xs">
+                  <span className="truncate text-muted-foreground">{category}</span>
+                  <span className="shrink-0 font-medium text-red-600">{formatPHP(amount)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className={cn("rounded-lg border bg-card p-4", netBalance >= 0 ? "border-green-200" : "border-red-200")}>
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
