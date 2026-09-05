@@ -229,14 +229,15 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <select
-          value={filterYear}
-          onChange={(e) => setFilterYear(e.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="all">All Years</option>
-          {years.map((y) => <option key={y} value={y}>{y}</option>)}
-        </select>
+        <Select value={filterYear} onValueChange={(value) => { setFilterYear(value); setPage(1) }}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Years</SelectItem>
+            {years.map((year) => <SelectItem key={year} value={year}>{year}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Select value={filterCategory} onValueChange={(value) => { setFilterCategory(value); setPage(1) }}>
           <SelectTrigger className="w-40">
             <SelectValue />
