@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select"
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
@@ -50,6 +53,7 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
   const [, startTransition] = useTransition()
   const [search, setSearch] = useState("")
   const [filterYear, setFilterYear] = useState("all")
+  const [filterCategory, setFilterCategory] = useState("all")
   const PAGE_SIZE = 20
   const [page, setPage] = useState(1)
   const [formOpen, setFormOpen] = useState(false)
@@ -67,11 +71,13 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
 
   const years = Array.from(new Set(records.flatMap((r) => [r.date.slice(0, 4), r.dateTo?.slice(0, 4)].filter((year): year is string => Boolean(year))))).sort().reverse()
   if (filterYear !== "all" && !years.includes(filterYear)) years.unshift(filterYear)
+  const categories = Array.from(new Set(records.map((r) => r.category.trim() || "Uncategorized"))).sort()
 
   const filtered = records
     .filter((r) => {
       const recordYears = [r.date.slice(0, 4), r.dateTo?.slice(0, 4)].filter((year): year is string => Boolean(year))
       if (filterYear !== "all" && !recordYears.includes(filterYear)) return false
+      if (filterCategory !== "all" && (r.category.trim() || "Uncategorized") !== filterCategory) return false
       if (!search) return true
       const q = search.toLowerCase()
       return r.category.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q)
@@ -100,6 +106,7 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
 
   function exportToPDF() {
     const yearLabel = filterYear === "all" ? "All Years" : filterYear
+    const categoryLabel = filterCategory === "all" ? "All Categories" : filterCategory
     const searchLabel = search ? ` · Search: "${search}"` : ""
     const rows = sorted.map((r) => `
       <tr>
@@ -132,7 +139,7 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
       @media print { body { padding:20px; } @page { margin:15mm; } }
     </style></head><body>
       <h1>Finance Report</h1>
-      <p class="meta">${yearLabel}${searchLabel} &middot; ${sorted.length} transaction${sorted.length !== 1 ? "s" : ""} &middot; Exported ${new Date().toLocaleDateString("en-AU", { day:"numeric", month:"long", year:"numeric" })}</p>
+      <p class="meta">${yearLabel} · ${categoryLabel}${searchLabel} &middot; ${sorted.length} transaction${sorted.length !== 1 ? "s" : ""} &middot; Exported ${new Date().toLocaleDateString("en-AU", { day:"numeric", month:"long", year:"numeric" })}</p>
       <div class="summary">
         <div class="summary-card"><div class="summary-label">Total Income</div><div class="summary-value income">${formatPHP(totalIncome)}</div></div>
         <div class="summary-card"><div class="summary-label">Total Expenses</div><div class="summary-value expense">${formatPHP(totalExpense)}</div></div>
@@ -230,6 +237,15 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
           <option value="all">All Years</option>
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
+        <Select value={filterCategory} onValueChange={(value) => { setFilterCategory(value); setPage(1) }}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Button variant="outline" onClick={exportToPDF} disabled={sorted.length === 0}>
           <FileDown className="mr-2 h-4 w-4" /> Export PDF
         </Button>
