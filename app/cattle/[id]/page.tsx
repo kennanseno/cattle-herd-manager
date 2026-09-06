@@ -74,6 +74,8 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
                 src={`/api/images/${cattle.imagePath.split("/").pop()}`}
                 alt={cattle.tagNumber}
                 fill
+                sizes="80px"
+                unoptimized
                 className="object-cover"
               />
             ) : "🐄"}
