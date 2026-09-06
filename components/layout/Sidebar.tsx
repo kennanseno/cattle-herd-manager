@@ -62,6 +62,8 @@ export function SidebarContent({
               src={`/api/images/${settings.logoPath.split('/').pop()}`}
               alt="Farm logo"
               fill
+              sizes="2.5rem"
+              unoptimized
               className="object-cover"
             />
           ) : (

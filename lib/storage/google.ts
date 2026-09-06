@@ -1,5 +1,6 @@
 import { google, type sheets_v4 } from 'googleapis';
 import type { StorageDriver, StoredImage, TableName } from './types';
+import { googleDriveImages } from './google-drive';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
@@ -139,21 +140,19 @@ export const googleDriver: StorageDriver = {
     await overwriteTab(SETTINGS_TAB, values);
   },
 
-  // Image storage is not available on the Google Sheets backend. Photo uploads
-  // are only supported by the local filesystem driver.
-  async uploadImage(): Promise<void> {
-    throw new Error('Image storage is not available with the Google Sheets backend.');
+  async uploadImage(filename: string, mimeType: string, data: Buffer): Promise<void> {
+    await googleDriveImages.uploadImage(filename, mimeType, data);
   },
 
-  async getImage(): Promise<StoredImage | null> {
-    return null;
+  async getImage(filename: string): Promise<StoredImage | null> {
+    return googleDriveImages.getImage(filename);
   },
 
-  async deleteImage(): Promise<void> {
-    // No-op: no image store is configured for this backend.
+  async deleteImage(filename: string): Promise<void> {
+    await googleDriveImages.deleteImage(filename);
   },
 
   async listImages(): Promise<string[]> {
-    return [];
+    return googleDriveImages.listImages();
   },
 };

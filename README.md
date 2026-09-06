@@ -1,10 +1,14 @@
 # Cattle Herd Manager
 
-A small herd management app built with Next.js App Router and CSV-backed data storage.
+A small herd management app built with Next.js App Router, local storage, and
+optional Google Sheets/Drive storage.
 
 ## Overview
 
-This app manages cattle records, breeding, health, finances, and settings. Data is stored locally using CSV files in the `data/` directory, and cattle images are served from `data/images/`.
+This app manages cattle records, breeding, health, finances, and settings.
+With the local backend, records use CSV/JSON files and images use
+`data/images/`. With Google storage enabled, records use Google Sheets and
+images use a separate Google Drive OAuth account.
 
 ## Prerequisites
 
@@ -45,6 +49,7 @@ npm run dev         # start development server on port 9999
 npm run build       # build production app
 npm run start       # start built app on port 9999
 npm run lint        # run ESLint
+npm run auth:google-drive # generate the Drive OAuth refresh token
 ```
 
 ## PM2 support
@@ -84,7 +89,9 @@ Important:
 - Breeding records and estimated calving windows
 - Health and finance tracking
 - PDF export for cattle ownership certificates
-- Image upload and file serving via API routes
+- Farm logo and cattle photo uploads
+- Cattle photo gallery with full-size modal navigation
+- Image serving through API routes
 
 ## Feature walkthrough video
 
@@ -106,24 +113,23 @@ Or view the animated demo directly in the README:
 The app supports two storage backends, selected automatically at runtime:
 
 - **Local (default):** CSV files under `data/` and images under `data/images/`.
-  Used whenever the Google environment variables below are not set. Ideal for
-  local development.
+   Used whenever the Google Sheets service-account variables are not set. Ideal
+   for local development.
 - **Google Sheets:** Used when the `GOOGLE_*` variables are set. Tabular data
   is stored in a Google Spreadsheet (one tab per category: `cattle`,
   `breeding`, `health`, `finances`, plus `settings`). This backend has no local
-  filesystem dependency, so it works on serverless hosts like Vercel.
-  **Note:** photo uploads are not available on this backend (service accounts
-  have no Drive storage quota); cattle photos are only supported by the local
-  backend.
+   filesystem dependency, so it works on serverless hosts like Vercel. Image
+   files are stored separately in a Google Drive folder using OAuth credentials
+   for the Google account that owns the images.
 
 See [.env.example](.env.example) for the required variables, and
 [docs/google-sheets-setup.md](docs/google-sheets-setup.md) for a step-by-step
 guide to obtaining them.
 
-## Deploy to Vercel (Google Sheets)
+## Deploy to Vercel (Google Sheets + Drive images)
 
-Vercel has no persistent filesystem, so the Google Sheets backend is required
-there.
+Vercel has no persistent filesystem, so use Google Sheets for tabular data and
+Google Drive OAuth for uploaded images.
 
 ### 1. Create a Google service account
 
@@ -133,6 +139,7 @@ there.
 3. Create a **Service Account** and add a **JSON key**. Download the key file.
 4. Note the service account email (looks like
    `name@project.iam.gserviceaccount.com`).
+5. Enable the **Google Drive API** for the project.
 
 ### 2. Create the spreadsheet
 
@@ -143,7 +150,24 @@ there.
 
 The app creates the needed tabs automatically on first write.
 
-### 3. Configure environment variables
+### 3. Configure Drive OAuth
+
+Create a **Desktop app** OAuth client under **APIs & Services → Credentials**.
+Add its client ID and secret to `.env.local`, then generate an offline refresh
+token:
+
+```bash
+set -a && source .env.local && set +a && npm run auth:google-drive
+```
+
+Authorize the Google account that should own the images, copy the printed
+refresh token into `.env.local`, and set `GOOGLE_DRIVE_FOLDER_ID` to an
+`images` folder in that account's Drive.
+
+See [docs/google-sheets-setup.md](docs/google-sheets-setup.md) for the complete
+setup sequence.
+
+### 4. Configure environment variables
 
 Set these in Vercel (Project → Settings → Environment Variables), matching
 [.env.example](.env.example):
@@ -152,13 +176,17 @@ Set these in Vercel (Project → Settings → Environment Variables), matching
 - `GOOGLE_PRIVATE_KEY` — paste the full key; keep `\n` escapes intact and wrap
   the value in quotes.
 - `GOOGLE_SHEETS_SPREADSHEET_ID`
+- `GOOGLE_DRIVE_CLIENT_ID`
+- `GOOGLE_DRIVE_CLIENT_SECRET`
+- `GOOGLE_DRIVE_REFRESH_TOKEN`
+- `GOOGLE_DRIVE_FOLDER_ID`
 
-### 4. Deploy
+### 5. Deploy
 
 Import the GitHub repo into Vercel and deploy. No special build settings are
 needed — `next build` works as-is.
 
-### 5. Migrate existing data (optional)
+### 6. Migrate existing data (optional)
 
 Your current data lives in `data/*.csv`. To move it into Google:
 
@@ -166,8 +194,8 @@ Your current data lives in `data/*.csv`. To move it into Google:
    open **Settings → Export** to download a backup ZIP — or run
    `curl http://localhost:9999/api/export -o backup.zip`.
 2. On the deployed app (Google backend), open **Settings → Import** and upload
-   that ZIP. This writes all records to the spreadsheet. (Photos in the ZIP are
-   skipped on the Google backend.)
+   that ZIP. This writes all records to the spreadsheet and uploads images to
+   the configured Google Drive folder.
 
 ### Caveats
 
@@ -176,8 +204,8 @@ Your current data lives in `data/*.csv`. To move it into Google:
 - **Lock it down before exposing real data.** A built-in password gate is
   available — see [Password protection](#password-protection) below. Set
   `APP_PASSWORD` in Vercel to require a password on every page and API route.
-- **API rate limits.** Google Sheets allows ~60 reads/min per user — ample for
-  personal use, not for heavy traffic.
+- **API rate limits.** Google Sheets and Drive have API quotas — ample for
+   personal use, not for heavy traffic.
 - **Back up regularly** using the built-in Export.
 
 ## Password protection

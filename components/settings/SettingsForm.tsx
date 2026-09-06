@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -29,6 +30,7 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ initialSettings }: SettingsFormProps) {
+  const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
@@ -59,6 +61,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
       })
       if (!res.ok) throw new Error("Failed to save")
       toast.success("Farm settings saved successfully")
+      router.refresh()
     } catch {
       toast.error("Failed to save settings")
     } finally {
@@ -116,7 +119,14 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
             <div className="relative h-24 w-24 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted shrink-0">
               {logoPreview ? (
                 <>
-                  <Image src={logoPreview} alt="Farm logo" fill className="object-cover" />
+                  <Image
+                    src={logoPreview}
+                    alt="Farm logo"
+                    fill
+                    sizes="6rem"
+                    unoptimized
+                    className="object-cover"
+                  />
                   <button
                     type="button"
                     onClick={() => { setLogoPath(""); setLogoPreview("") }}

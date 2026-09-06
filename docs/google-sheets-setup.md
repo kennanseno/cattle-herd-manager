@@ -1,11 +1,18 @@
 # Getting the Google Sheets `.env` values
 
-This guide walks through creating the four credentials the app needs to use
+This guide walks through configuring the credentials the app needs to use
 Google Sheets as its storage backend:
 
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 - `GOOGLE_PRIVATE_KEY`
 - `GOOGLE_SHEETS_SPREADSHEET_ID`
+
+Google Drive image storage uses a separate OAuth account:
+
+- `GOOGLE_DRIVE_CLIENT_ID`
+- `GOOGLE_DRIVE_CLIENT_SECRET`
+- `GOOGLE_DRIVE_REFRESH_TOKEN`
+- `GOOGLE_DRIVE_FOLDER_ID`
 
 Everything here is **free**.
 
@@ -30,7 +37,11 @@ With your project selected, open the
 [Google Sheets API library page](https://console.cloud.google.com/apis/library/sheets.googleapis.com)
 and click **Enable**.
 
-> The Drive API is **not** needed — this app only uses Sheets.
+> The Drive API is needed for uploaded farm and cattle images.
+
+Also open the
+[Google Drive API library page](https://console.cloud.google.com/apis/library/drive.googleapis.com)
+and click **Enable**.
 
 ## 3. Create the service account → gives `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 
@@ -72,7 +83,37 @@ and click **Enable**.
 
 ---
 
-## 6. Put the values in place
+## 6. Create a Google OAuth client
+
+1. Open **APIs & Services → OAuth consent screen** in Google Cloud Console.
+2. Configure the app, choose **External** for a personal Gmail account, and
+   add the Google account that will own the images as a test user if prompted.
+3. Open **APIs & Services → Credentials**.
+4. Click **Create Credentials → OAuth client ID**.
+5. Choose **Desktop app**, create it, and copy the client ID and client secret.
+   These are `GOOGLE_DRIVE_CLIENT_ID` and `GOOGLE_DRIVE_CLIENT_SECRET`.
+
+> Move the consent screen to **In production** for a long-lived deployment.
+> OAuth refresh tokens issued while an app is in Testing mode can expire after
+> seven days.
+
+## 7. Authorize Drive image storage
+
+1. Add the OAuth client ID and secret to `.env.local`.
+2. Run:
+
+   ```bash
+   set -a && source .env.local && set +a && npm run auth:google-drive
+   ```
+
+3. Open the authorization URL printed in the terminal.
+4. Grant access to the Google account that should own the farm images.
+5. Copy the printed `GOOGLE_DRIVE_REFRESH_TOKEN` into `.env.local`.
+
+Create an `images` folder in that same Google Drive account and copy its ID
+from the folder URL. This is `GOOGLE_DRIVE_FOLDER_ID`.
+
+## 8. Put the values in place
 
 **Local testing** — create a `.env.sheets` file (gitignored) from
 [.env.example](../.env.example):
@@ -81,6 +122,10 @@ and click **Enable**.
 GOOGLE_SERVICE_ACCOUNT_EMAIL=cattle-app@cattle-herd-xxxxx.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n"
 GOOGLE_SHEETS_SPREADSHEET_ID=1AbCdEf...
+GOOGLE_DRIVE_CLIENT_ID=123456789.apps.googleusercontent.com
+GOOGLE_DRIVE_CLIENT_SECRET=...
+GOOGLE_DRIVE_REFRESH_TOKEN=...
+GOOGLE_DRIVE_FOLDER_ID=1XyZ...
 ```
 
 Run with those vars loaded:
@@ -95,9 +140,9 @@ Or verify the connection without starting the app:
 set -a && source .env.sheets && set +a && node_modules/.bin/tsx scripts/test-google.mjs
 ```
 
-**Vercel** — add the three variables under **Project → Settings →
-Environment Variables**. When pasting the private key there, paste the value
-**without** the surrounding quotes.
+**Vercel** — add all seven Google variables under **Project → Settings →
+Environment Variables**. Keep the client secret, refresh token, private key,
+and app password secret.
 
 > **Lock down the deployment.** To require a password on every page and API
 > route, also set `APP_PASSWORD` in the same Environment Variables screen. Use a
@@ -112,8 +157,8 @@ Environment Variables**. When pasting the private key there, paste the value
   org account; switch to a personal Gmail (see the note at the top).
 - **`403` / "The caller does not have permission"** — the spreadsheet isn't
   shared with the service account email, or the wrong sheet ID is set.
-- **"Missing required environment variable"** — one of the three vars is empty
-  or not loaded into the process.
-- **Photo uploads fail** — expected. Images aren't supported on the Sheets
-  backend (service accounts have no Drive storage quota); use the local backend
-  for photos.
+- **"Missing required environment variable"** — one of the Sheets or Drive
+   variables is empty or not loaded into the process.
+- **Photo uploads fail** — confirm the Drive API is enabled, the refresh token
+   belongs to the Google account that owns the folder, and the folder ID is
+   correct.
