@@ -207,6 +207,8 @@ export function CattleTable({ cattle }: CattleTableProps) {
                           src={`/api/images/${c.imagePath.split("/").pop()}`}
                           alt={c.tagNumber}
                           fill
+                          sizes="32px"
+                          unoptimized
                           className="object-cover"
                         />
                       ) : "🐄"}

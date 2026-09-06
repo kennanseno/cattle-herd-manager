@@ -74,6 +74,8 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
                 src={`/api/images/${cattle.imagePath.split("/").pop()}`}
                 alt={cattle.tagNumber}
                 fill
+                sizes="80px"
+                unoptimized
                 className="object-cover"
               />
             ) : "🐄"}
@@ -215,7 +217,10 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
       {/* Photo Gallery */}
       <CattlePhotoGallery
         tagNumber={cattle.tagNumber}
-        initialPhotos={(cattle.photos || "").split(",").map((p) => p.trim()).filter(Boolean)}
+        initialPhotos={[
+          cattle.imagePath,
+          ...(cattle.photos || "").split(","),
+        ].map((p) => p.trim()).filter((p, index, photos) => p && photos.indexOf(p) === index)}
       />
     </div>
   )
