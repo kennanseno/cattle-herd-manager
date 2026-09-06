@@ -142,7 +142,7 @@ export function CattlePhotoGallery({ tagNumber, initialPhotos }: CattlePhotoGall
                   }}
                   role="button"
                   tabIndex={0}
-                  className="relative group aspect-square rounded-lg overflow-hidden bg-muted border"
+                  className="relative group aspect-square cursor-pointer rounded-lg overflow-hidden bg-muted border"
                 >
                   <Image
                     src={photoUrl(photo)}
