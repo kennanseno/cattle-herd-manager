@@ -215,7 +215,10 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
       {/* Photo Gallery */}
       <CattlePhotoGallery
         tagNumber={cattle.tagNumber}
-        initialPhotos={(cattle.photos || "").split(",").map((p) => p.trim()).filter(Boolean)}
+        initialPhotos={[
+          cattle.imagePath,
+          ...(cattle.photos || "").split(","),
+        ].map((p) => p.trim()).filter((p, index, photos) => p && photos.indexOf(p) === index)}
       />
     </div>
   )
