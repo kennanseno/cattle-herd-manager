@@ -91,13 +91,13 @@ export function SidebarContent({
               href={href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground hover:translate-x-0.5 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" />
+              <Icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
               {label}
             </Link>
           )

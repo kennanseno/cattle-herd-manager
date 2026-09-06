@@ -30,7 +30,11 @@ export function AppShell({
       <Sidebar settings={settings} version={version} authEnabled={authEnabled} />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <MobileNav settings={settings} version={version} authEnabled={authEnabled} />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto">
+          <div key={pathname} className="min-h-full animate-page-enter">
+            {children}
+          </div>
+        </main>
       </div>
       {authEnabled && <SessionExpiryDialog />}
     </>

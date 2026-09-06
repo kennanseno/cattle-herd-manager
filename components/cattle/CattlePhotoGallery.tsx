@@ -174,7 +174,7 @@ export function CattlePhotoGallery({ tagNumber, initialPhotos }: CattlePhotoGall
         open={selectedPhotoIndex !== null}
         onOpenChange={(open) => !open && setSelectedPhotoIndex(null)}
       >
-        <DialogContent className="max-w-5xl border-none bg-black/95 p-2 text-white sm:p-4">
+        <DialogContent className="max-w-5xl border-none bg-black/95 p-2 text-white duration-300 ease-out sm:p-4">
           <DialogTitle className="sr-only">Cattle photo gallery</DialogTitle>
           {selectedPhotoIndex !== null && photos[selectedPhotoIndex] && (
             <div className="relative flex min-h-[60vh] items-center justify-center">
@@ -184,14 +184,14 @@ export function CattlePhotoGallery({ tagNumber, initialPhotos }: CattlePhotoGall
                 fill
                 sizes="(max-width: 1024px) 95vw, 80vw"
                 unoptimized
-                className="object-contain"
+                className="object-contain animate-gallery-image"
               />
               {photos.length > 1 && (
                 <>
                   <button
                     type="button"
                     onClick={showPreviousPhoto}
-                    className="absolute left-2 rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
+                    className="absolute left-2 cursor-pointer rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
                     aria-label="Previous photo"
                   >
                     <ChevronLeft className="h-6 w-6" />
@@ -199,7 +199,7 @@ export function CattlePhotoGallery({ tagNumber, initialPhotos }: CattlePhotoGall
                   <button
                     type="button"
                     onClick={showNextPhoto}
-                    className="absolute right-2 rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
+                    className="absolute right-2 cursor-pointer rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
                     aria-label="Next photo"
                   >
                     <ChevronRight className="h-6 w-6" />
