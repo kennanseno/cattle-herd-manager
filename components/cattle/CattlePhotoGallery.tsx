@@ -6,6 +6,10 @@ import { toast } from "sonner"
 import { Upload, X, Loader2, ImageIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
+  Dialog, DialogContent, DialogTitle,
+} from "@/components/ui/dialog"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
@@ -21,11 +25,20 @@ export function CattlePhotoGallery({ tagNumber, initialPhotos }: CattlePhotoGall
   const [dragOver, setDragOver] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function photoUrl(p: string) {
     const filename = p.split("/").pop() || ""
     return `/api/images/${encodeURIComponent(filename)}`
+  }
+
+  function showPreviousPhoto() {
+    setSelectedPhotoIndex((current) => current === null ? null : (current - 1 + photos.length) % photos.length)
+  }
+
+  function showNextPhoto() {
+    setSelectedPhotoIndex((current) => current === null ? null : (current + 1) % photos.length)
   }
 
   const uploadFiles = useCallback(async (files: File[]) => {
@@ -120,20 +133,31 @@ export function CattlePhotoGallery({ tagNumber, initialPhotos }: CattlePhotoGall
           {/* Gallery grid */}
           {photos.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {photos.map((photo) => (
+              {photos.map((photo, index) => (
                 <div
                   key={photo}
-                  className="relative group aspect-square rounded-lg overflow-hidden bg-muted border"
+                  onClick={() => setSelectedPhotoIndex(index)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") setSelectedPhotoIndex(index)
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className="relative group aspect-square cursor-pointer rounded-lg overflow-hidden bg-muted border"
                 >
                   <Image
                     src={photoUrl(photo)}
                     alt="Cattle photo"
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                    unoptimized
                     className="object-cover"
                   />
                   <button
-                    onClick={() => setDeleteTarget(photo)}
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setDeleteTarget(photo)
+                    }}
                     className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-red-600"
                     aria-label="Remove photo"
                   >
@@ -145,6 +169,50 @@ export function CattlePhotoGallery({ tagNumber, initialPhotos }: CattlePhotoGall
           )}
         </CardContent>
       </Card>
+
+      <Dialog
+        open={selectedPhotoIndex !== null}
+        onOpenChange={(open) => !open && setSelectedPhotoIndex(null)}
+      >
+        <DialogContent className="max-w-5xl border-none bg-black/95 p-2 text-white sm:p-4">
+          <DialogTitle className="sr-only">Cattle photo gallery</DialogTitle>
+          {selectedPhotoIndex !== null && photos[selectedPhotoIndex] && (
+            <div className="relative flex min-h-[60vh] items-center justify-center">
+              <Image
+                src={photoUrl(photos[selectedPhotoIndex])}
+                alt={`Cattle photo ${selectedPhotoIndex + 1} of ${photos.length}`}
+                fill
+                sizes="(max-width: 1024px) 95vw, 80vw"
+                unoptimized
+                className="object-contain"
+              />
+              {photos.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={showPreviousPhoto}
+                    className="absolute left-2 rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showNextPhoto}
+                    className="absolute right-2 rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                  <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs tabular-nums">
+                    {selectedPhotoIndex + 1} / {photos.length}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>

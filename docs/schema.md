@@ -7,6 +7,10 @@ This document defines the canonical schema for all data tables in cattle-herd-ma
 - **Local CSV templates** (`data/*.csv`)
 - **Google Sheets integration** (`lib/storage/google.ts`)
 
+Image files are not stored in table cells. The local backend stores them under
+`data/images/`; the Google backend stores them in the folder configured by
+`GOOGLE_DRIVE_FOLDER_ID` through the OAuth Drive client.
+
 ## Table Schemas
 
 ### Cattle
@@ -132,7 +136,8 @@ id,tagNumber,generatedAt,notes
 
 ### FarmSettings
 
-**Purpose:** Configuration and metadata stored in JSON format.
+**Purpose:** Configuration and metadata stored in JSON locally or as key/value
+rows in the Google Sheets `settings` tab.
 
 | Field | Type | Optional | Notes |
 |-------|------|----------|-------|
@@ -144,7 +149,8 @@ id,tagNumber,generatedAt,notes
 | website | string | No | Farm website URL |
 | logoPath | string | No | Path to logo image |
 
-**Storage:** `data/settings.json` (not CSV)
+**Storage:** `data/settings.json` locally; `settings` tab in Google Sheets when
+the Google backend is active.
 
 ---
 
@@ -177,11 +183,11 @@ This will:
 
 | Table | Missing Column | Type | Impact |
 |-------|-----------------|------|--------|
-| cattle | photos | optional | Risk of losing multi-photo data in local storage |
-| breeding | breedDateTo | optional | Cannot store breeding date ranges locally |
-| finances | dateTo | optional | Cannot store multi-day transaction ranges locally |
+| cattle | photos | optional | Older exports may not contain multi-photo data |
+| breeding | breedDateTo | optional | Older exports may not contain breeding date ranges |
+| finances | dateTo | optional | Older exports may not contain multi-day transaction ranges |
 
-These gaps do NOT cause crashes but may lose data during export/import cycles.
+These gaps do NOT cause crashes but may lose data when importing older backups.
 
 ---
 

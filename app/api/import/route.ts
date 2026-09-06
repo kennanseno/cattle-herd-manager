@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import AdmZip from "adm-zip";
 import path from "path";
-import { storage, isGoogleConfigured } from "@/lib/storage";
+import { storage } from "@/lib/storage";
 import { mimeFromFilename } from "@/lib/storage/types";
 import type { Cattle, BreedingRecord, HealthRecord, FinanceRecord, FarmSettings } from "@/types";
 
@@ -36,14 +36,12 @@ export async function POST(request: Request) {
       await storage.writeSettings<FarmSettings>(body.settings);
     }
 
-    // Restore images (not supported on the Google Sheets backend).
-    if (!isGoogleConfigured()) {
-      for (const entry of zip.getEntries()) {
-        if (entry.entryName.startsWith("images/") && !entry.isDirectory) {
-          const filename = path.basename(entry.entryName);
-          if (filename) {
-            await storage.uploadImage(filename, mimeFromFilename(filename), entry.getData());
-          }
+    // Restore images to the active storage backend.
+    for (const entry of zip.getEntries()) {
+      if (entry.entryName.startsWith("images/") && !entry.isDirectory) {
+        const filename = path.basename(entry.entryName);
+        if (filename) {
+          await storage.uploadImage(filename, mimeFromFilename(filename), entry.getData());
         }
       }
     }

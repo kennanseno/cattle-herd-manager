@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start -p 9999",
     "lint": "eslint",
+    "auth:google-drive": "node scripts/google-drive-auth.mjs",
     "validate:schema": "node scripts/validate-schema.mjs",
     "pm2:start": "pm2 start \"npm run dev\" --name cattle-herd && pm2 save",
     "pm2:stop": "pm2 stop cattle-herd",

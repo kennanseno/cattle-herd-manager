@@ -37,6 +37,8 @@ export function MobileNav({ settings, version, authEnabled }: MobileNavProps) {
               src={`/api/images/${settings.logoPath.split("/").pop()}`}
               alt="Farm logo"
               fill
+              sizes="1.75rem"
+              unoptimized
               className="object-cover"
             />
           ) : (
