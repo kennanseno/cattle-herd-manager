@@ -39,7 +39,8 @@ const styles = StyleSheet.create({
   introStrong: { fontFamily: "Times-Bold", color: ACCENT },
 
   ownerBlock: { width: "100%", alignItems: "center", paddingTop: 15 },
-  ownerLine: {  textAlign: "center", width: "235", borderTop: "1pt solid #333", paddingTop: 5 },
+  ownerLine: { textAlign: "center", width: "235", borderBottom: "1pt solid #333", paddingBottom: 5 },
+  ownerName: { fontSize: 11, fontFamily: "Times-Bold" },
   ownerCaption: { textAlign: "center", fontSize: 8.5, fontFamily: "Times-Italic", color: "#888", marginTop: 3, marginBottom: 14 },
 
   // Details panel
@@ -168,12 +169,13 @@ function PedigreeBlock({
   )
 }
 
-function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generatedAt }: {
+function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generatedAt, ownerName }: {
   cattle: Cattle
   allCattle: Cattle[]
   settings: FarmSettings
   certificateId: string
   generatedAt: string
+  ownerName: string
 }) {
   const sire = lookupCattle(cattle.sireTagNumber, allCattle)
   const dam = lookupCattle(cattle.damTagNumber, allCattle)
@@ -234,7 +236,9 @@ function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generat
           </Text>
 
           <View style={styles.ownerBlock}>
-            <View style={styles.ownerLine}></View>
+            <View style={styles.ownerLine}>
+              <Text style={styles.ownerName}>{ownerName}</Text>
+            </View>
             <Text style={styles.ownerCaption}>(Name of Owner)</Text>
           </View>
 
@@ -325,6 +329,7 @@ export async function generateCattlePDF(
   settings: FarmSettings,
   certificateId: string,
   generatedAt: string,
+  ownerName: string,
 ): Promise<void> {
   const blob = await pdf(
     <CattlePDFDocument
@@ -333,6 +338,7 @@ export async function generateCattlePDF(
       settings={settings}
       certificateId={certificateId}
       generatedAt={generatedAt}
+      ownerName={ownerName}
     />
   ).toBlob()
 

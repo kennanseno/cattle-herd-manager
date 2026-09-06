@@ -17,15 +17,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const cattle = await getCattleByTag(id);
     if (!cattle) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const body = await request.json() as { id?: string; generatedAt?: string; notes?: string };
-    if (!body.id) {
-      return NextResponse.json({ error: "Missing certificate id" }, { status: 400 });
+    const body = await request.json() as { id?: string; generatedAt?: string; ownerName?: string; notes?: string };
+    if (!body.id || !body.ownerName?.trim()) {
+      return NextResponse.json({ error: "Missing certificate id or owner name" }, { status: 400 });
     }
 
     const record = await recordPdfExport({
       id: body.id,
       tagNumber: id,
       generatedAt: body.generatedAt,
+      ownerName: body.ownerName,
       notes: body.notes,
     });
     return NextResponse.json(record, { status: 201 });

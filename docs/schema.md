@@ -125,11 +125,12 @@ id,date,dateTo,type,category,amount,description,notes,relatedTagNumber,createdAt
 | id | string | No | UUID printed on certificate |
 | tagNumber | string | No | Cattle tag certificate was generated for |
 | generatedAt | string | No | ISO timestamp |
+| ownerName | string | No | New owner named on the certificate |
 | notes | string | No | Free-text context for export |
 
 **CSV Column Order:**
 ```
-id,tagNumber,generatedAt,notes
+id,tagNumber,generatedAt,ownerName,notes
 ```
 
 ---

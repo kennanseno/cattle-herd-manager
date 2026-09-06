@@ -34,7 +34,7 @@ const SCHEMAS = {
     optional: ['dateTo'],
   },
   pdfExports: {
-    required: ['id', 'tagNumber', 'generatedAt', 'notes'],
+    required: ['id', 'tagNumber', 'generatedAt', 'ownerName', 'notes'],
     optional: [],
   },
 };
