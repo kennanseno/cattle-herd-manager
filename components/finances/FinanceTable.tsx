@@ -18,6 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { FinanceForm } from "@/components/finances/FinanceForm"
+import { InfoTooltip } from "@/components/ui/info-tooltip"
 import type { FinanceRecord, Cattle } from "@/types"
 import { formatDateRange, formatPHP, cn } from "@/lib/utils"
 import { PaginationBar } from "@/components/ui/pagination-bar"
@@ -293,7 +294,12 @@ export function FinanceTable({ records, allCattle }: FinanceTableProps) {
                     </Badge>
                   </TableCell>
                   <TableCell>{r.category}</TableCell>
-                  <TableCell className="text-muted-foreground">{r.description || "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <span>{r.description || "—"}</span>
+                      {r.notes?.trim() && <InfoTooltip text={r.notes.trim()} />}
+                    </div>
+                  </TableCell>
                   <TableCell className={cn("text-right font-semibold", r.type === "income" ? "text-green-600" : "text-red-600")}>
                     {r.type === "income" ? "+" : "−"}{formatPHP(parseFloat(r.amount || "0"))}
                   </TableCell>
