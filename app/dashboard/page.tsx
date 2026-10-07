@@ -1,16 +1,16 @@
 import {
   getAllCattle, getAllBreeding, getAllFinances, getSettings,
 } from "@/lib/data"
-import { isCalf, daysUntil, formatDate, formatPHP, getAgeInYears, getAgeInMonths, calcCalvingDate, formatAgeWithMonths } from "@/lib/utils"
+import { isCalf, daysUntil, formatDate, getAgeInYears, getAgeInMonths, calcCalvingDate, formatAgeWithMonths } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import {
-  Beef, Baby, Users, AlertTriangle, TrendingUp, TrendingDown, CalendarDays, Milk,
+  Beef, Baby, Users, AlertTriangle, TrendingUp, CalendarDays, Milk,
 } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip"
 import { FinanceTrendChart, type YearlyFinanceDatum } from "@/components/dashboard/FinanceTrendChart"
+import { FinanceSummaryCard } from "@/components/dashboard/FinanceSummaryCard"
 
 export const dynamic = "force-dynamic"
 
@@ -173,39 +173,11 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Finance Summary */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Finances (All Time)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-sm text-green-600">
-                <TrendingUp className="h-3.5 w-3.5" /> Income
-              </span>
-              <span className="font-semibold text-green-600">{formatPHP(totalIncome)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-sm text-red-600">
-                <TrendingDown className="h-3.5 w-3.5" /> Expenses
-              </span>
-              <span className="font-semibold text-red-600">{formatPHP(totalExpense)}</span>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Net Balance</span>
-              <span className={`font-bold ${netBalance >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {netBalance >= 0 ? "+" : "−"}{formatPHP(Math.abs(netBalance))}
-              </span>
-            </div>
-            <Link href="/finances" className="block text-xs text-primary hover:underline text-center pt-1">
-              View all transactions →
-            </Link>
-          </CardContent>
-        </Card>
+        <FinanceSummaryCard
+          totalIncome={totalIncome}
+          totalExpense={totalExpense}
+          netBalance={netBalance}
+        />
 
         {/* Finance Trend (takes half width) */}
         <Card className="lg:col-span-2">
