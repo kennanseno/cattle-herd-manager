@@ -381,7 +381,7 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
                   <button
                     type="button"
                     onClick={() => { setImagePath(""); setImagePreview("") }}
-                    className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5"
+                    className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5 cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>

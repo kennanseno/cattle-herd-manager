@@ -73,7 +73,7 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
         </DialogHeader>
 
         <div className="space-y-2">
-          <label htmlFor="export-owner-name" className="text-sm font-medium text-slate-900">Name of new owner</label>
+          <label htmlFor="export-owner-name" className="cursor-pointer text-sm font-medium text-slate-900">Name of new owner</label>
           <Input
             id="export-owner-name"
             value={ownerName}
@@ -85,7 +85,7 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="export-notes" className="text-sm font-medium text-slate-900">Export notes</label>
+          <label htmlFor="export-notes" className="cursor-pointer text-sm font-medium text-slate-900">Export notes</label>
           <Textarea
             id="export-notes"
             value={notes}

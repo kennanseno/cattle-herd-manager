@@ -29,7 +29,7 @@ function formatAxisValue(value: number) {
   const divisor = absoluteValue >= 1_000_000 ? 1_000_000 : absoluteValue >= 1_000 ? 1_000 : 1
   const suffix = divisor === 1_000_000 ? "M" : divisor === 1_000 ? "k" : ""
 
-  if (divisor === 1) return value
+  if (divisor === 1) return String(value)
   return `${Number((value / divisor).toFixed(1))}${suffix}`
 }
 
