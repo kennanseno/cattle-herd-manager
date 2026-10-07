@@ -24,6 +24,15 @@ interface FinanceTrendChartProps {
   data: YearlyFinanceDatum[]
 }
 
+function formatAxisValue(value: number) {
+  const absoluteValue = Math.abs(value)
+  const divisor = absoluteValue >= 1_000_000 ? 1_000_000 : absoluteValue >= 1_000 ? 1_000 : 1
+  const suffix = divisor === 1_000_000 ? "M" : divisor === 1_000 ? "k" : ""
+
+  if (divisor === 1) return value
+  return `${Number((value / divisor).toFixed(1))}${suffix}`
+}
+
 function TooltipContent({ payload, label }: any) {
   if (!payload || payload.length === 0) return null
   return (
@@ -65,7 +74,7 @@ export function FinanceTrendChart({ data }: FinanceTrendChartProps) {
           <LineChart data={chartData} margin={{ top: 10, right: 20, left: 12, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
             <XAxis dataKey="year" tick={{ fill: "#374151" }} />
-            <YAxis tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} tick={{ fill: "#374151" }} />
+            <YAxis tickFormatter={formatAxisValue} tick={{ fill: "#374151" }} />
             <Tooltip content={<TooltipContent />} />
             <Legend />
             <Line type="monotone" dataKey="Income" stroke="#16a34a" strokeWidth={3} dot={{ r: 4 }} />
