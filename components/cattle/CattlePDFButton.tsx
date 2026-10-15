@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import type { Cattle, FarmSettings } from "@/types"
 
@@ -20,6 +21,7 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
   const [open, setOpen] = useState(false)
   const [ownerName, setOwnerName] = useState("")
   const [notes, setNotes] = useState("")
+  const [sampleCopy, setSampleCopy] = useState(false)
 
   async function handleExport() {
     const trimmedOwnerName = ownerName.trim()
@@ -34,14 +36,14 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
       const { generateCattlePDF } = await import("@/components/cattle/CattlePDFDocument")
       const certificateId = crypto.randomUUID()
       const generatedAt = new Date().toISOString()
-      await generateCattlePDF(cattle, allCattle, settings, certificateId, generatedAt, trimmedOwnerName)
+      await generateCattlePDF(cattle, allCattle, settings, certificateId, generatedAt, trimmedOwnerName, sampleCopy)
 
       // Log the generation so it appears in the certificate history.
       try {
         await fetch(`/api/cattle/${encodeURIComponent(cattle.tagNumber)}/pdf-exports`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: certificateId, generatedAt, ownerName: trimmedOwnerName, notes }),
+          body: JSON.stringify({ id: certificateId, generatedAt, ownerName: trimmedOwnerName, notes, sampleCopy }),
         })
       } catch {
         // The PDF already downloaded; failing to log history shouldn't block the user.
@@ -49,6 +51,7 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
       setOpen(false)
       setOwnerName("")
       setNotes("")
+      setSampleCopy(false)
     } catch (err) {
       console.error(err)
       toast.error("Failed to generate PDF")
@@ -58,7 +61,7 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
   }
 
   return (
-    <Dialog open={open} onOpenChange={(value) => { if (!value) { setOwnerName(""); setNotes("") }; setOpen(value) }}>
+    <Dialog open={open} onOpenChange={(value) => { if (!value) { setOwnerName(""); setNotes(""); setSampleCopy(false) }; setOpen(value) }}>
       <Button variant="outline" onClick={() => setOpen(true)} disabled={loading}>
         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
         Export PDF
@@ -94,6 +97,15 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
             rows={5}
           />
         </div>
+
+        <label htmlFor="export-sample-copy" className="flex cursor-pointer items-center gap-2">
+          <Checkbox
+            id="export-sample-copy"
+            checked={sampleCopy}
+            onCheckedChange={(checked) => setSampleCopy(checked === true)}
+          />
+          <span className="text-sm font-medium text-foreground">Add SAMPLE COPY watermark.</span>
+        </label>
 
         <DialogFooter>
           <Button variant="secondary" onClick={() => setOpen(false)} disabled={loading}>

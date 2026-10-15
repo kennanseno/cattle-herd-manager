@@ -213,7 +213,7 @@ export async function getPdfExportsByTag(tagNumber: string): Promise<PdfExportRe
 
 /** Append a certificate generation event to the export log. */
 export async function recordPdfExport(
-  data: { id: string; tagNumber: string; generatedAt?: string; ownerName: string; notes?: string },
+  data: { id: string; tagNumber: string; generatedAt?: string; ownerName: string; notes?: string; sampleCopy?: boolean },
 ): Promise<PdfExportRecord> {
   const all = await getAllPdfExports();
   const record: PdfExportRecord = {
@@ -222,6 +222,7 @@ export async function recordPdfExport(
     generatedAt: data.generatedAt || nowISO(),
     ownerName: data.ownerName.trim(),
     notes: data.notes?.trim() || "",
+    sampleCopy: data.sampleCopy ?? false,
   };
   await storage.writeTable('pdfExports', [...all, record]);
   return record;

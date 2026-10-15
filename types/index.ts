@@ -80,4 +80,5 @@ export interface PdfExportRecord {
   generatedAt: string; // ISO timestamp of when the PDF was generated
   ownerName: string; // new owner named for the certificate
   notes: string; // optional context for why the PDF was exported
+  sampleCopy?: boolean; // whether the exported PDF has a SAMPLE COPY watermark
 }

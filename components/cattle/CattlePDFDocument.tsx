@@ -17,6 +17,19 @@ const styles = StyleSheet.create({
   // Decorative double frame
   frameOuter: { position: "absolute", top: 16, left: 16, right: 16, bottom: 16, border: `2.5pt solid ${ACCENT}` },
   frameInner: { position: "absolute", top: 22, left: 22, right: 22, bottom: 22, border: `0.75pt solid ${GOLD}` },
+  watermark: {
+    position: "absolute",
+    top: 390,
+    left: 0,
+    right: 0,
+    color: "#8c3d3d",
+    opacity: 0.22,
+    fontSize: 54,
+    fontFamily: "Times-Bold",
+    letterSpacing: 4,
+    textAlign: "center",
+    transform: "rotate(-32deg)",
+  },
 
   content: { paddingTop: 16, paddingHorizontal: 30 },
 
@@ -169,13 +182,14 @@ function PedigreeBlock({
   )
 }
 
-function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generatedAt, ownerName }: {
+function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generatedAt, ownerName, sampleCopy }: {
   cattle: Cattle
   allCattle: Cattle[]
   settings: FarmSettings
   certificateId: string
   generatedAt: string
   ownerName: string
+  sampleCopy: boolean
 }) {
   const sire = lookupCattle(cattle.sireTagNumber, allCattle)
   const dam = lookupCattle(cattle.damTagNumber, allCattle)
@@ -197,6 +211,8 @@ function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generat
         {/* Decorative double frame */}
         <View style={styles.frameOuter} fixed />
         <View style={styles.frameInner} fixed />
+
+        {sampleCopy ? <Text style={styles.watermark} fixed> SAMPLE COPY </Text> : null}
 
         <View style={styles.content}>
           {/* Farm header */}
@@ -330,6 +346,7 @@ export async function generateCattlePDF(
   certificateId: string,
   generatedAt: string,
   ownerName: string,
+  sampleCopy = false,
 ): Promise<void> {
   const blob = await pdf(
     <CattlePDFDocument
@@ -339,6 +356,7 @@ export async function generateCattlePDF(
       certificateId={certificateId}
       generatedAt={generatedAt}
       ownerName={ownerName}
+      sampleCopy={sampleCopy}
     />
   ).toBlob()
 

@@ -127,10 +127,11 @@ id,date,dateTo,type,category,amount,description,notes,relatedTagNumber,createdAt
 | generatedAt | string | No | ISO timestamp |
 | ownerName | string | No | New owner named on the certificate |
 | notes | string | No | Free-text context for export |
+| sampleCopy | boolean | Yes | Whether the PDF has a SAMPLE COPY watermark |
 
 **CSV Column Order:**
 ```
-id,tagNumber,generatedAt,ownerName,notes
+id,tagNumber,generatedAt,ownerName,notes,sampleCopy
 ```
 
 ---

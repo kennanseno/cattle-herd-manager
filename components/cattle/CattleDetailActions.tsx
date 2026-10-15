@@ -118,6 +118,9 @@ export function CattleDetailActions({ cattle, allCattle }: CattleDetailActionsPr
                     <p className="text-sm font-medium">
                       {new Date(e.generatedAt).toLocaleString()}
                     </p>
+                    {e.sampleCopy ? (
+                      <p className="text-xs font-medium text-amber-700">Sample copy</p>
+                    ) : null}
                     {e.ownerName ? (
                       <p className="truncate text-xs text-muted-foreground" title={e.ownerName}>
                         Owner: {e.ownerName}

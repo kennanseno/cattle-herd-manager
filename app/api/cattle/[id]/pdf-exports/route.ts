@@ -17,7 +17,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const cattle = await getCattleByTag(id);
     if (!cattle) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const body = await request.json() as { id?: string; generatedAt?: string; ownerName?: string; notes?: string };
+    const body = await request.json() as {
+      id?: string;
+      generatedAt?: string;
+      ownerName?: string;
+      notes?: string;
+      sampleCopy?: boolean;
+    };
     if (!body.id || !body.ownerName?.trim()) {
       return NextResponse.json({ error: "Missing certificate id or owner name" }, { status: 400 });
     }
@@ -28,6 +34,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       generatedAt: body.generatedAt,
       ownerName: body.ownerName,
       notes: body.notes,
+      sampleCopy: body.sampleCopy === true,
     });
     return NextResponse.json(record, { status: 201 });
   } catch {
