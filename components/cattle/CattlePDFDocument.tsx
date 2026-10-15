@@ -228,9 +228,6 @@ function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generat
             <View style={styles.farmBlock}>
               <Text style={styles.farmName}>{settings.farmName || "Cattle Farm"}</Text>
               {settings.address ? <Text style={styles.farmDetails}>{settings.address}</Text> : null}
-              {settings.phone || settings.email ? (
-                <Text style={styles.farmDetails}>{[settings.phone, settings.email].filter(Boolean).join("   ·   ")}</Text>
-              ) : null}
             </View>
           </View>
 

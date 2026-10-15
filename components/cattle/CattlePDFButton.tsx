@@ -84,6 +84,7 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
             placeholder="Enter owner's full name"
             autoComplete="name"
             required
+            disabled={sampleCopy}
           />
         </div>
 
@@ -102,7 +103,11 @@ export function CattlePDFButton({ cattle, allCattle, settings }: CattlePDFButton
           <Checkbox
             id="export-sample-copy"
             checked={sampleCopy}
-            onCheckedChange={(checked) => setSampleCopy(checked === true)}
+            onCheckedChange={(checked) => {
+              const isSampleCopy = checked === true
+              setSampleCopy(isSampleCopy)
+              setOwnerName(isSampleCopy ? "SAMPLE COPY" : "")
+            }}
           />
           <span className="text-sm font-medium text-foreground">Add SAMPLE COPY watermark.</span>
         </label>
