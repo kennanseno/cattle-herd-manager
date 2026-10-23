@@ -19,9 +19,55 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:9999");
+const siteName = "Cattle Herd Manager";
+const siteDescription =
+  "Keep cattle records, breeding plans, health notes, and farm finances together in one thoughtful workspace.";
+
 export const metadata: Metadata = {
-  title: "Cattle Herd Manager",
-  description: "Thoughtful tools for cattle records, breeding, health, and farm finances.",
+  metadataBase: new URL(siteUrl),
+  applicationName: siteName,
+  title: {
+    default: siteName,
+    template: `%s | ${siteName}`,
+  },
+  description: siteDescription,
+  keywords: [
+    "cattle management",
+    "herd management",
+    "farm management",
+    "breeding records",
+    "livestock health",
+    "farm finances",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName,
+    title: siteName,
+    description: siteDescription,
+    url: "/",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Cattle Herd Manager — thoughtful tools for better herd care",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: siteDescription,
+    images: ["/opengraph-image"],
+  },
 };
 
 export const dynamic = "force-dynamic";

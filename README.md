@@ -67,9 +67,13 @@ secrets with a `NEXT_PUBLIC_` prefix.
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | App authentication and database | Supabase project API settings |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | App authentication and database | Supabase project API settings |
+| `NEXT_PUBLIC_SITE_URL` | Optional canonical URL for social metadata | Your production domain |
 
 The app also accepts `NEXT_PUBLIC_SUPABASE_ANON_KEY` as a backward-compatible
 alternative key name, but it is not needed when the publishable key is set.
+On Vercel, the production deployment URL is used for metadata if
+`NEXT_PUBLIC_SITE_URL` is not configured. Set it to your custom domain when
+you have one.
 
 ## Farm deletion
 

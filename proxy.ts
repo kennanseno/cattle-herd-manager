@@ -10,7 +10,14 @@ import {
   serializeSessionMetadata,
 } from "@/lib/session-expiry";
 
-const publicPaths = new Set(["/", "/login", "/register"]);
+const publicPaths = new Set([
+  "/",
+  "/login",
+  "/register",
+  "/icon.svg",
+  "/apple-icon",
+  "/opengraph-image",
+]);
 const sessionApiPaths = new Set(["/api/auth/logout", "/api/auth/refresh"]);
 const protectedPagePaths = new Set([
   "/dashboard",
