@@ -1,8 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import Image from "next/image"
+import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Beef,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
+import { logoutAction } from "@/app/actions/auth"
 import type { FarmSettings } from "@/types"
 
 const navItems = [
@@ -40,35 +40,13 @@ export function SidebarContent({
   onNavigate,
 }: SidebarProps & { onNavigate?: () => void }) {
   const pathname = usePathname()
-  const router = useRouter()
-
-  async function handleLogout() {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" })
-    } finally {
-      onNavigate?.()
-      router.push("/login")
-      router.refresh()
-    }
-  }
 
   return (
     <div className="flex h-full w-full flex-col bg-sidebar text-sidebar-foreground">
       {/* Farm Logo & Name */}
       <div className="flex items-center gap-3 px-5 py-6 border-b border-sidebar-border">
         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-sidebar-accent flex items-center justify-center">
-          {settings.logoPath ? (
-            <Image
-              src={`/api/images/${settings.logoPath.split('/').pop()}`}
-              alt="Farm logo"
-              fill
-              sizes="2.5rem"
-              unoptimized
-              className="object-cover"
-            />
-          ) : (
-            <span className="text-lg font-bold text-sidebar-primary">🐄</span>
-          )}
+          <span className="text-lg font-bold text-sidebar-primary">🐄</span>
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-sidebar-primary">
@@ -123,14 +101,16 @@ export function SidebarContent({
           <ThemeToggle />
         </div>
         {authEnabled && (
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-sidebar-muted-foreground transition-colors cursor-pointer hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-          >
-            <LogOut className="h-4 w-4" />
-            Log out
-          </button>
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              onClick={onNavigate}
+              className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-sidebar-muted-foreground transition-colors cursor-pointer hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              Log out
+            </button>
+          </form>
         )}
       </div>
     </div>

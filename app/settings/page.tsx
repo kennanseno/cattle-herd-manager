@@ -1,6 +1,6 @@
 import { getSettings } from "@/lib/data"
 import { SettingsForm } from "@/components/settings/SettingsForm"
-import { DataPortabilityCard } from "@/components/settings/DataPortabilityCard"
+import { DeleteFarmCard } from "@/components/settings/DeleteFarmCard"
 import { Settings } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -19,7 +19,7 @@ export default async function SettingsPage() {
       </div>
       <div className="space-y-6">
         <SettingsForm initialSettings={settings} />
-        <DataPortabilityCard />
+        <DeleteFarmCard farmName={settings.farmName} />
       </div>
     </div>
   )

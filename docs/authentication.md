@@ -1,174 +1,74 @@
-# Authentication & Session Management
+# Authentication and sessions
 
-This document describes how authentication and session management work in the Cattle Herd Manager.
+## Authentication
 
-## Overview
+The app uses Supabase Auth. Its built-in registration and login forms use
+email/password credentials; provider configuration and account lifecycle are
+managed in the Supabase project. The app does not use the former
+deployment-wide `APP_PASSWORD` gate.
 
-The app uses a simple password-based authentication system with optional protection enabled via the `APP_PASSWORD` environment variable. Sessions are time-limited with an expiration warning to ensure security.
+Set `NEXT_PUBLIC_SUPABASE_URL` and either
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` in
+the app environment. The public key is designed for client use; farm access
+is enforced by row-level security. Never put a Supabase service-role key in
+the app or browser environment.
 
-## Password Protection
+On registration, a database trigger creates one farm for the new Auth user.
+Farm data is scoped to that owner. If Supabase email confirmation is enabled,
+registration does not immediately create an active session; the current
+registration screen asks users to disable confirmations for the no-verification
+flow.
 
-### Enabling/Disabling
+Protected page and API requests are checked by `proxy.ts`. Server data access
+also requires a valid Supabase user and resolves that user's farm.
 
-- **To enable:** Set the `APP_PASSWORD` environment variable to any string (20+ characters recommended).
-- **To disable:** Leave `APP_PASSWORD` unset (default for local development).
+## Session expiration
 
-### How It Works
+The app applies a fixed, absolute session window:
 
-1. Unauthenticated requests are redirected to `/login`
-2. Users enter the password, which is sent to `/api/auth/login`
-3. On success, a signed HttpOnly session cookie is issued
-4. The cookie contains an HMAC of a fixed message, keyed by the password (never stores the password itself)
-5. Changing `APP_PASSWORD` automatically invalidates all existing sessions
+- Session window: 15 minutes from login or refresh
+- Warning: 2 minutes before the window expires
+- Continuing: refreshes the Supabase session and starts a new 15-minute
+  application window
+- Timeout: signs out the Supabase session, clears the expiry metadata, and
+  redirects to login
 
-## Session Management
+This is not a sliding inactivity timeout: ordinary activity does not extend
+the 15-minute window.
 
-### Session Duration
+Supabase's cookies hold the authentication session. The app also uses a
+`chm_session_meta` cookie containing `{ issuedAt, expiresAt }` timestamps to
+show the warning and enforce the app's fixed window. This cookie is not an
+authentication credential; the server validates the actual Supabase user.
 
-- **Session lifespan:** 15 minutes from login or refresh
-- **Warning threshold:** 2 minutes before expiration
-- **Behavior on expiration:** User is redirected to `/login` with `?expired=true` query parameter
+The warning is displayed by `components/SessionExpiryDialog.tsx`, with timer
+state in `lib/useSessionExpiry.ts`. Continue and logout use:
 
-### Session Extension Dialog
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
 
-When a session is about to expire (2 minutes remaining), an **AlertDialog** appears in the app, showing:
+Session window constants are defined in `lib/session-expiry.ts`. If they are
+changed, keep the UI countdown, refresh behavior, and server-side expiry check
+consistent.
 
-- Time remaining (e.g., "2:00")
-- Two action buttons:
-  - **"Continue"** — calls `/api/auth/refresh` to issue a new 15-minute session
-  - **"Logout"** — calls `/api/auth/logout` to end the session immediately
+## Farm and account deletion
 
-If the user clicks "Continue", their session is extended. If they do nothing, the session expires and they are logged out.
+Farm Settings offers irreversible account deletion. It requires typing the
+current farm name and checking a separate acknowledgment. The
+`delete_own_farm` database function confirms the signed-in user and farm name,
+then deletes the Auth user; foreign-key cascades remove that user's farm and
+app records. Data stored outside this app is not affected. Apply the matching
+Supabase migration before using the control.
 
-### Session Metadata
+## Local setup and troubleshooting
 
-Two cookies are used:
+1. Configure the Supabase project URL and publishable/anon key in `.env.local`.
+2. Apply all files in `supabase/migrations/` to the Supabase project.
+3. For immediate registration, disable email confirmation in Supabase Auth.
+4. Restart the Next.js server after environment changes.
+5. If login fails, confirm the account exists in Supabase Auth and that the
+   app points at the same Supabase project.
 
-1. **`chm_auth`** (HttpOnly) — Contains the HMAC session token
-2. **`chm_session_meta`** — Contains JSON metadata: `{ issuedAt, expiresAt }` (timestamps in ms)
-
-The client reads `chm_session_meta` to check session expiration status.
-
-## API Endpoints
-
-### `POST /api/auth/login`
-
-**Input:**
-```json
-{
-  "password": "user-provided-password"
-}
-```
-
-**Output (on success):**
-```json
-{
-  "ok": true,
-  "expiresAt": 1719345600000
-}
-```
-
-**Behavior:**
-- Sets both `chm_auth` and `chm_session_meta` cookies
-- Implements brute-force throttle: 5 failures → 5-minute lockout per client IP
-
-### `POST /api/auth/refresh`
-
-Extends an existing session by 15 more minutes.
-
-**Output (on success):**
-```json
-{
-  "ok": true,
-  "expiresAt": 1719346500000
-}
-```
-
-**Error responses:**
-- `401` if no valid session cookie exists
-- `401` if the session cookie is invalid/forged
-
-### `POST /api/auth/logout`
-
-Clears both session cookies and logs the user out.
-
-## Client-Side Implementation
-
-### `useSessionExpiry()` Hook
-
-Located in `lib/useSessionExpiry.ts`, this hook:
-
-- Reads the `chm_session_meta` cookie
-- Checks expiration every 10 seconds
-- Triggers a warning when 2 minutes remain
-- Auto-redirects to `/login` when the session expires
-
-**Returns:**
-```typescript
-{
-  isExpired: boolean;           // True if session has expired
-  isExpiring: boolean;          // True if 2 minutes remain
-  timeLeft: number | null;      // Milliseconds until expiration (if expiring)
-  handleContinue: () => Promise<void>;  // Refresh the session
-  handleLogout: () => Promise<void>;    // Log out immediately
-}
-```
-
-### `SessionExpiryDialog` Component
-
-Located in `components/SessionExpiryDialog.tsx`, this component:
-
-- Wraps `useSessionExpiry()` hook
-- Displays an AlertDialog when `isExpiring` is true
-- Shows formatted countdown timer
-- Handles "Continue" and "Logout" actions
-
-## Security Notes
-
-- **HttpOnly cookies:** The auth token is HttpOnly, preventing XSS attacks from stealing the session.
-- **Timing-safe comparison:** Session validation uses constant-time string comparison to prevent timing attacks.
-- **Password never logged:** Only HMACs are stored/transmitted, never the password itself.
-- **Brute-force throttle:** Per-client IP throttling (5 failures = 5-minute lockout), though this is best-effort on serverless platforms.
-- **Time-based expiration:** Fixed 15-minute sessions with no activity tracking (session expires at absolute time, not sliding window).
-
-## Changing Session Duration
-
-To change the session duration, edit the `SESSION_DURATION_MS` constant in `lib/auth.ts`:
-
-```typescript
-export const SESSION_DURATION_MS = 15 * 60 * 1000; // Change 15 to your desired minutes
-```
-
-This affects:
-- Login and refresh endpoints
-- Session metadata cookie expiration
-- Client-side warning threshold (always 2 minutes before expiration)
-
-**Note:** Changing this requires a server restart.
-
-## Testing Session Expiration Locally
-
-1. Set `APP_PASSWORD=test`
-2. Run `npm run dev`
-3. Log in with password "test"
-4. Wait 13 minutes — a dialog should appear
-5. Click "Continue" to test session refresh
-6. Alternatively, manually edit the browser's `chm_session_meta` cookie to set `expiresAt` to a past timestamp to test expiration
-
-## Deployment Considerations
-
-### Vercel
-
-- Brute-force throttle is best-effort (resets on redeploy)
-- Use a strong password (20+ characters) as your primary defense
-- Set `APP_PASSWORD` under **Project → Settings → Environment Variables**
-
-### Single-Instance VPS
-
-- Brute-force throttle is reliable (in-memory state persists)
-- Consider using a moderately strong password
-
-### Multi-Instance / Load Balanced
-
-- Brute-force throttle is per-instance (requests may bypass it via load balancing)
-- Use a strong password; consider additional security layers (WAF, IP allowlist, etc.)
+The app requires Node.js 20 or later. `APP_PASSWORD`, the legacy `chm_auth`
+cookie, and the retired password/HMAC login are not part of the current auth
+flow.

@@ -1,5 +1,5 @@
 import {
-  Document, Page, Text, View, StyleSheet, pdf, Image,
+  Document, Page, Text, View, StyleSheet, pdf,
 } from "@react-pdf/renderer"
 import type { Cattle, FarmSettings } from "@/types"
 import { formatDate, getAgeInYears, getAgeInMonths, formatAgeWithMonths } from "@/lib/utils"
@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
 
   // Farm header
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 4 },
-  logo: { width: 52, height: 52, objectFit: "cover", borderRadius: 26, marginRight: 12 },
   farmBlock: { alignItems: "center" },
   farmName: { fontSize: 17, fontFamily: "Times-Bold", color: ACCENT, letterSpacing: 0.5 },
   farmDetails: { fontSize: 8.5, fontFamily: "Times-Roman", color: "#666", marginTop: 2, textAlign: "center" },
@@ -217,14 +216,6 @@ function CattlePDFDocument({ cattle, allCattle, settings, certificateId, generat
         <View style={styles.content}>
           {/* Farm header */}
           <View style={styles.headerRow}>
-            {settings.logoPath ? (
-              // react-pdf Image renders to PDF, not the DOM, and its type has no alt prop
-              // eslint-disable-next-line jsx-a11y/alt-text
-              <Image
-                src={`/api/images/${settings.logoPath.split("/").pop()}`}
-                style={styles.logo}
-              />
-            ) : null}
             <View style={styles.farmBlock}>
               <Text style={styles.farmName}>{settings.farmName || "Cattle Farm"}</Text>
               {settings.address ? <Text style={styles.farmDetails}>{settings.address}</Text> : null}

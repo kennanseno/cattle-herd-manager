@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
 import { toast } from "sonner"
 import {
   Plus, Search, Eye, Pencil, Trash2, ChevronUp, ChevronDown,
@@ -171,7 +170,6 @@ export function CattleTable({ cattle }: CattleTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12"></TableHead>
               <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("tagNumber")}>
                 <span className="flex items-center gap-1">Tag # <SortIcon k="tagNumber" sortKey={sortKey} dir={sortDir} /></span>
               </TableHead>
@@ -193,27 +191,13 @@ export function CattleTable({ cattle }: CattleTableProps) {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   {cattle.length === 0 ? "No cattle yet." : "No cattle match your search."}
                 </TableCell>
               </TableRow>
             ) : (
               paginated.map((c) => (
                 <TableRow key={c.tagNumber}>
-                  <TableCell>
-                    <div className="relative h-8 w-8 rounded-full overflow-hidden bg-muted flex items-center justify-center text-sm">
-                      {c.imagePath ? (
-                        <Image
-                          src={`/api/images/${c.imagePath.split("/").pop()}`}
-                          alt={c.tagNumber}
-                          fill
-                          sizes="32px"
-                          unoptimized
-                          className="object-cover"
-                        />
-                      ) : "🐄"}
-                    </div>
-                  </TableCell>
                   <TableCell className="font-mono font-semibold">{c.tagNumber}</TableCell>
                   <TableCell className="text-muted-foreground">{c.nickname || "—"}</TableCell>
                   <TableCell>{formatDate(c.dateOfBirth)}</TableCell>

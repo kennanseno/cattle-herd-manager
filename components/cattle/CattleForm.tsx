@@ -6,8 +6,7 @@ import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
-import { Loader2, Upload, X, Search, Plus } from "lucide-react"
-import Image from "next/image"
+import { Loader2, Search, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -138,12 +137,6 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
   const router = useRouter()
   const isEditing = !!cattle
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [dragOver, setDragOver] = useState(false)
-  const [imagePath, setImagePath] = useState(cattle?.imagePath || "")
-  const [imagePreview, setImagePreview] = useState(
-    cattle?.imagePath ? `/api/images/${cattle.imagePath.split("/").pop()}` : ""
-  )
   const [sireTag, setSireTag] = useState(cattle?.sireTagNumber || "")
   const [damTag, setDamTag] = useState(cattle?.damTagNumber || "")
 
@@ -165,8 +158,6 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
       })
       setSireTag(cattle?.sireTagNumber || "")
       setDamTag(cattle?.damTagNumber || "")
-      setImagePath(cattle?.imagePath || "")
-      setImagePreview(cattle?.imagePath ? `/api/images/${cattle.imagePath.split("/").pop()}` : "")
     }
   }, [open, cattle])
 
@@ -186,35 +177,6 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
     },
   })
 
-  async function uploadFile(file: File) {
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const res = await fetch("/api/upload", { method: "POST", body: formData })
-      if (!res.ok) throw new Error("Upload failed")
-      const data = await res.json()
-      setImagePath(data.path)
-      setImagePreview(`/api/images/${data.filename}`)
-    } catch {
-      toast.error("Failed to upload image")
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) uploadFile(file)
-  }
-
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setDragOver(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file && file.type.startsWith("image/")) uploadFile(file)
-  }
-
   async function onSubmit(values: FormValues) {
     setSaving(true)
     try {
@@ -222,7 +184,6 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
         ...values,
         sireTagNumber: sireTag,
         damTagNumber: damTag,
-        imagePath,
       }
 
       const url = isEditing ? `/api/cattle/${cattle.tagNumber}` : "/api/cattle"
@@ -361,46 +322,6 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
             <div className="space-y-2">
               <Label htmlFor="weaningWeight">Weaning Weight (kg)</Label>
               <Input id="weaningWeight" type="number" step="0.1" {...register("weaningWeight")} placeholder="0.0" />
-            </div>
-          </div>
-
-          {/* Image Upload */}
-          <div className="space-y-2">
-            <Label>Photo</Label>
-            <div
-              className={`flex items-center gap-4 rounded-lg border-2 border-dashed p-3 transition-colors ${
-                dragOver ? "border-primary bg-primary/5" : "border-border"
-              }`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-            >
-              {imagePreview ? (
-                <div className="relative h-16 w-16 rounded-lg overflow-hidden border shrink-0">
-                  <Image src={imagePreview} alt="Cattle" fill className="object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => { setImagePath(""); setImagePreview("") }}
-                    className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5 cursor-pointer"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ) : (
-                <div className="h-16 w-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted text-2xl shrink-0">
-                  🐄
-                </div>
-              )}
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="cattle-image" className="cursor-pointer">
-                  <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm hover:bg-accent transition-colors">
-                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                    {uploading ? "Uploading..." : "Upload Photo"}
-                  </div>
-                </Label>
-                <p className="text-xs text-muted-foreground">or drag & drop an image here</p>
-              </div>
-              <input id="cattle-image" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
             </div>
           </div>
 

@@ -11,8 +11,6 @@ export interface Cattle {
   breed: string;
   birthWeight: string;
   weaningWeight: string;
-  imagePath: string;
-  photos?: string; // comma-separated "data/images/filename.ext" paths
   notes?: string; // ad-hoc free-text notes
   status: CattleStatus;
   createdAt: string;
@@ -71,7 +69,6 @@ export interface FarmSettings {
   phone: string;
   email: string;
   website: string;
-  logoPath: string;
 }
 
 export interface PdfExportRecord {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,21 +12,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSessionExpiry } from "@/lib/useSessionExpiry";
 
-/**
- * Component that displays a confirmation dialog when the session is about to expire.
- * Should be rendered at the root level of the app (in AppShell or layout).
- */
 export function SessionExpiryDialog() {
   const { isExpiring, timeLeft, handleContinue, handleLogout } = useSessionExpiry();
-  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    setIsOpen(isExpiring);
-  }, [isExpiring]);
-
   const formatTimeLeft = (ms: number | null): string => {
-    if (!ms) return "0:00";
+    if (ms === null) return "0:00";
     const seconds = Math.ceil(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -37,7 +28,6 @@ export function SessionExpiryDialog() {
     setIsLoading(true);
     try {
       await handleContinue();
-      setIsOpen(false);
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +43,7 @@ export function SessionExpiryDialog() {
   };
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+    <AlertDialog open={isExpiring} onOpenChange={() => undefined}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Session Expiring</AlertDialogTitle>
@@ -62,10 +52,22 @@ export function SessionExpiryDialog() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex justify-end gap-3">
-          <AlertDialogCancel onClick={onLogout} disabled={isLoading}>
+          <AlertDialogCancel
+            disabled={isLoading}
+            onClick={(event) => {
+              event.preventDefault();
+              void onLogout();
+            }}
+          >
             Logout
           </AlertDialogCancel>
-          <AlertDialogAction onClick={onContinue} disabled={isLoading}>
+          <AlertDialogAction
+            disabled={isLoading}
+            onClick={(event) => {
+              event.preventDefault();
+              void onContinue();
+            }}
+          >
             {isLoading ? "Continuing..." : "Continue"}
           </AlertDialogAction>
         </div>

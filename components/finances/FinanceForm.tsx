@@ -55,6 +55,13 @@ const schema = z.object({
       path: ["relatedTagNumber"],
     })
   }
+  if (!Number.isFinite(Number(data.amount)) || Number(data.amount) <= 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Amount must be a number greater than zero",
+      path: ["amount"],
+    })
+  }
 })
 
 type FormValues = z.output<typeof schema>
@@ -71,6 +78,7 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
   const router = useRouter()
   const isEditing = !!record
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState("")
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false)
   const [rangeMode, setRangeMode] = useState(false)
 
@@ -90,6 +98,7 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
 
   useEffect(() => {
     if (open) {
+      setSaveError("")
       const hasRange = !!record?.dateTo
       setRangeMode(hasRange)
       reset({
@@ -127,6 +136,7 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
     }
 
     setSaving(true)
+    setSaveError("")
     try {
       const url = isEditing ? `/api/finances/${record.id}` : "/api/finances"
       const method = isEditing ? "PUT" : "POST"
@@ -137,14 +147,21 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
         body: JSON.stringify({ ...values, amount: parseFloat(values.amount) }),
       })
 
-      if (!res.ok) throw new Error("Failed")
+      const result: unknown = await res.json().catch(() => null)
+      const responseError = result && typeof result === "object" && "error" in result &&
+        typeof result.error === "string" ? result.error : null
+      if (!res.ok) {
+        throw new Error(responseError ?? `The server returned an error (${res.status}).`)
+      }
       toast.success(isEditing ? "Transaction updated" : "Transaction added")
       onSuccess()
       onOpenChange(false)
       reset()
       router.refresh()
-    } catch {
-      toast.error("Failed to save transaction")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An unexpected error occurred."
+      setSaveError(message)
+      toast.error(`Could not save transaction: ${message}`)
     } finally {
       setSaving(false)
     }
@@ -320,6 +337,13 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
             <Label htmlFor="notes">Notes</Label>
             <Textarea id="notes" {...register("notes")} rows={2} placeholder="Additional notes..." />
           </div>
+
+          {saveError && (
+            <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              <p className="font-medium">Transaction was not saved.</p>
+              <p>{saveError}</p>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
