@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export async function getFarmContext() {
+export const getFarmContext = cache(async function getFarmContext() {
   const supabase = await createSupabaseServerClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError) throw new Error(`Could not verify the signed-in user: ${userError.message}`);
@@ -13,4 +14,4 @@ export async function getFarmContext() {
     .single();
   if (farmError) throw new Error(`Could not load the signed-in user's farm: ${farmError.message}`);
   return { supabase, farm };
-}
+});

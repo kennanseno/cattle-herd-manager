@@ -2,10 +2,9 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import { toast } from "sonner"
 import {
-  Plus, Search, Eye, Pencil, Trash2, ChevronUp, ChevronDown,
+  Plus, Search, Pencil, Trash2, ChevronUp, ChevronDown,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -197,7 +196,14 @@ export function CattleTable({ cattle }: CattleTableProps) {
               </TableRow>
             ) : (
               paginated.map((c) => (
-                <TableRow key={c.tagNumber}>
+                <TableRow
+                  key={c.tagNumber}
+                  className="cursor-pointer hover:bg-primary/15 dark:hover:bg-primary/20"
+                  onClick={(event) => {
+                    if (event.target instanceof Element && event.target.closest("a, button, input, select, textarea")) return
+                    router.push(`/cattle/${encodeURIComponent(c.tagNumber)}`)
+                  }}
+                >
                   <TableCell className="font-mono font-semibold">{c.tagNumber}</TableCell>
                   <TableCell className="text-muted-foreground">{c.nickname || "—"}</TableCell>
                   <TableCell>{formatDate(c.dateOfBirth)}</TableCell>
@@ -217,9 +223,6 @@ export function CattleTable({ cattle }: CattleTableProps) {
                   <TableCell>{statusBadge(c.status)}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/cattle/${c.tagNumber}`}><Eye className="h-4 w-4" /></Link>
-                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => { setEditCattle(c); setFormOpen(true) }}>
                         <Pencil className="h-4 w-4" />
                       </Button>

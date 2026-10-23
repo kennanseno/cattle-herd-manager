@@ -25,7 +25,7 @@ import {
 import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from "@/components/ui/command"
-import { cn } from "@/lib/utils"
+import { cn, todayISO } from "@/lib/utils"
 import type { FinanceRecord, Cattle } from "@/types"
 
 const CATEGORIES_INCOME = ["Cattle Sale", "Milk Sale", "Stud Fee", "Government Subsidy", "Other Income"]
@@ -85,8 +85,8 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
   const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
-      date: record?.date || "",
-      dateTo: record?.dateTo || "",
+      date: record?.date || todayISO(),
+      dateTo: record?.dateTo || todayISO(),
       type: record?.type || "expense",
       category: record?.category || "",
       amount: record?.amount?.toString() || "",
@@ -102,8 +102,8 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
       const hasRange = !!record?.dateTo
       setRangeMode(hasRange)
       reset({
-        date: record?.date || "",
-        dateTo: record?.dateTo || "",
+        date: record?.date || todayISO(),
+        dateTo: record?.dateTo || todayISO(),
         type: record?.type || "expense",
         category: record?.category || "",
         amount: record?.amount?.toString() || "",
@@ -118,7 +118,8 @@ export function FinanceForm({ open, onOpenChange, record, allCattle, onSuccess }
 
   function handleRangeModeToggle(checked: boolean) {
     setRangeMode(checked)
-    if (!checked) setValue("dateTo", "")
+    if (checked) setValue("dateTo", todayISO())
+    else setValue("dateTo", "")
   }
   const txCategory = watch("category")
   const relatedTag = watch("relatedTagNumber")

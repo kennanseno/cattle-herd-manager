@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { Cattle } from "@/types"
-import { formatDate } from "@/lib/utils"
+import { formatDate, todayISO } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 
 const schema = z.object({
@@ -146,7 +146,7 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
     if (open) {
       reset({
         tagNumber: cattle?.tagNumber || "",
-        dateOfBirth: cattle?.dateOfBirth || "",
+        dateOfBirth: cattle?.dateOfBirth || todayISO(),
         sex: cattle?.sex || "female",
         breed: cattle?.breed || "Brahman",
         sireTagNumber: cattle?.sireTagNumber || "",
@@ -165,7 +165,7 @@ export function CattleForm({ open, onOpenChange, cattle, allCattle, onSuccess }:
     resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       tagNumber: cattle?.tagNumber || "",
-      dateOfBirth: cattle?.dateOfBirth || "",
+      dateOfBirth: cattle?.dateOfBirth || todayISO(),
       sex: cattle?.sex || "female",
       breed: cattle?.breed || "Brahman",
       sireTagNumber: cattle?.sireTagNumber || "",

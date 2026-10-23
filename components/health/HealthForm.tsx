@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Cattle, HealthRecord } from "@/types"
+import { todayISO } from "@/lib/utils"
 
 const HEALTH_TYPES = ["Vaccination", "Deworming", "Vitamin Supplement", "Checkup", "Treatment", "Surgery", "Other"]
 
@@ -61,7 +62,7 @@ export function HealthForm({ open, onOpenChange, record, allCattle, onSuccess }:
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
-      recordDate: record?.recordDate || "",
+      recordDate: record?.recordDate || todayISO(),
       veterinarian: record?.veterinarian || "",
       cost: record?.cost || "",
       notes: record?.notes || "",
@@ -75,7 +76,7 @@ export function HealthForm({ open, onOpenChange, record, allCattle, onSuccess }:
   useEffect(() => {
     if (open) {
       reset({
-        recordDate: record?.recordDate || "",
+        recordDate: record?.recordDate || todayISO(),
         veterinarian: record?.veterinarian || "",
         cost: record?.cost || "",
         notes: record?.notes || "",
