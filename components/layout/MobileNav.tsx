@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import { Menu } from "lucide-react"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { SidebarContent } from "@/components/layout/Sidebar"
@@ -31,19 +30,8 @@ export function MobileNav({ settings, version, authEnabled }: MobileNavProps) {
       </button>
 
       <div className="flex items-center gap-2 min-w-0">
-        <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-md bg-sidebar-accent flex items-center justify-center">
-          {settings.logoPath ? (
-            <Image
-              src={`/api/images/${settings.logoPath.split("/").pop()}`}
-              alt="Farm logo"
-              fill
-              sizes="1.75rem"
-              unoptimized
-              className="object-cover"
-            />
-          ) : (
-            <span className="text-sm font-bold text-sidebar-primary">🐄</span>
-          )}
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sidebar-accent">
+          <span className="text-sm font-bold text-sidebar-primary">🐄</span>
         </div>
         <p className="truncate text-sm font-semibold text-sidebar-primary">
           {settings.farmName || "My Farm"}

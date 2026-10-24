@@ -1,0 +1,27 @@
+project_id = "cattle-herd-manager"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:9999"
+additional_redirect_urls = ["http://127.0.0.1:9999"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false

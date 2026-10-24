@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
 import { getAllCattle } from "@/lib/data"
 import { formatDate, getAgeInYears, getAgeInMonths, isCalf, formatAgeWithMonths } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -9,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { FamilyTree } from "@/components/cattle/FamilyTree"
 import { CattleDetailActions } from "@/components/cattle/CattleDetailActions"
 import { CattlePDFButton } from "@/components/cattle/CattlePDFButton"
-import { CattlePhotoGallery } from "@/components/cattle/CattlePhotoGallery"
 import { CattleNotesEditor } from "@/components/cattle/CattleNotesEditor"
 import { ArrowLeft, Baby } from "lucide-react"
 import type { Cattle } from "@/types"
@@ -68,18 +66,6 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
       {/* Header */}
       <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="relative h-20 w-20 rounded-xl overflow-hidden border bg-muted flex items-center justify-center text-3xl shrink-0">
-            {cattle.imagePath ? (
-              <Image
-                src={`/api/images/${cattle.imagePath.split("/").pop()}`}
-                alt={cattle.tagNumber}
-                fill
-                sizes="80px"
-                unoptimized
-                className="object-cover"
-              />
-            ) : "🐄"}
-          </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold font-mono">{cattle.tagNumber}</h1>
@@ -214,14 +200,6 @@ export default async function CattleDetailPage({ params }: { params: Promise<{ i
         initialNotes={cattle.notes || ""}
       />
 
-      {/* Photo Gallery */}
-      <CattlePhotoGallery
-        tagNumber={cattle.tagNumber}
-        initialPhotos={[
-          cattle.imagePath,
-          ...(cattle.photos || "").split(","),
-        ].map((p) => p.trim()).filter((p, index, photos) => p && photos.indexOf(p) === index)}
-      />
     </div>
   )
 }

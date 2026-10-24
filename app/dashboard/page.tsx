@@ -28,14 +28,12 @@ export default async function DashboardPage() {
   const bulls = activeCattle.filter((c) => c.sex === "male" && !isCalf(c.dateOfBirth))
   const cows = activeCattle.filter((c) => c.sex === "female" && !isCalf(c.dateOfBirth))
 
-  // Upcoming calvings (pending, calving in next 60 days)
   const upcomingCalvings = allBreeding
     .filter((r) => r.status === "pending" && r.possibleCalvingDate)
     .map((r) => ({ ...r, daysLeft: daysUntil(r.possibleCalvingDate) }))
     .filter((r) => r.daysLeft <= 60)
     .sort((a, b) => a.daysLeft - b.daysLeft)
 
-  // Finance summary (all time)
   const { totalIncome, totalExpense } = allFinances.reduce(
     (totals, f) => {
       const amount = parseFloat(f.amount)
@@ -60,26 +58,20 @@ export default async function DashboardPage() {
     }, {} as Record<string, YearlyFinanceDatum>),
   ).sort((a, b) => a.year.localeCompare(b.year))
 
-  // Weaning alerts: calves aged 5–7 months (approaching or at weaning window)
-  // and calves over 7 months still active (overdue)
   const weaningCalves = activeCattle
     .filter((c) => isCalf(c.dateOfBirth))
     .map((c) => ({ ...c, ageMonths: getAgeInMonths(c.dateOfBirth) }))
     .filter((c) => c.ageMonths >= 5 && c.ageMonths <= 7)
     .sort((a, b) => b.ageMonths - a.ageMonths)
 
-  // Alerts: females age > 4yr with no calving records OR last calving > 2yr ago
   const twoYearsAgo = new Date()
   twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
   const latestCalvingByCow = allBreeding.reduce((acc, r) => {
     if (r.status !== "calved") return acc
     const date = r.possibleCalvingDate || r.breedDate
     if (!date) return acc
-
     const latest = acc.get(r.cowTagNumber)
-    if (!latest || date > latest) {
-      acc.set(r.cowTagNumber, date)
-    }
+    if (!latest || date > latest) acc.set(r.cowTagNumber, date)
     return acc
   }, new Map<string, string>())
 
@@ -100,7 +92,6 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Herd Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Total Active", value: activeCattle.length, icon: Beef, color: "text-primary", href: "/cattle" },
@@ -125,7 +116,6 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-4">
-        {/* Upcoming Calvings */}
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -173,13 +163,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <FinanceSummaryCard
-          totalIncome={totalIncome}
-          totalExpense={totalExpense}
-          netBalance={netBalance}
-        />
+        <FinanceSummaryCard totalIncome={totalIncome} totalExpense={totalExpense} netBalance={netBalance} />
 
-        {/* Finance Trend (takes half width) */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -193,48 +178,38 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Weaning Soon + Breeding Alerts (side-by-side) */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Milk className="h-4 w-4 text-primary" />
-            Weaning Alerts ({weaningCalves.length})
-            <InfoTooltip text={"Calves aged 5–7 months are in the weaning window.\nCalves over 7 months are assumed to be weaned."} />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {weaningCalves.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              No calves approaching weaning age yet.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {weaningCalves.map((calf) => {
-                const ageStr = `${calf.ageMonths} month${calf.ageMonths !== 1 ? "s" : ""}`
-                return (
-                  <Link
-                    key={calf.tagNumber}
-                    href={`/cattle/${encodeURIComponent(calf.tagNumber)}`}
-                    className="flex items-center justify-between rounded border px-3 py-2 hover:bg-muted transition-colors"
-                  >
-                    <span>
-                      <span className="font-mono font-semibold">{calf.tagNumber}</span>
-                      {calf.nickname && <span className="text-muted-foreground ml-2">({calf.nickname})</span>}
-                      <span className="text-xs text-muted-foreground ml-2">born {formatDate(calf.dateOfBirth)}</span>
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {`${ageStr} — wean soon`}
-                    </Badge>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </CardContent>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Milk className="h-4 w-4 text-primary" />
+              Weaning Alerts ({weaningCalves.length})
+              <InfoTooltip text={"Calves aged 5–7 months are in the weaning window.\nCalves over 7 months are assumed to be weaned."} />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {weaningCalves.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No calves approaching weaning age yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {weaningCalves.map((calf) => {
+                  const ageStr = `${calf.ageMonths} month${calf.ageMonths !== 1 ? "s" : ""}`
+                  return (
+                    <Link key={calf.tagNumber} href={`/cattle/${encodeURIComponent(calf.tagNumber)}`} className="flex items-center justify-between rounded border px-3 py-2 hover:bg-muted transition-colors">
+                      <span>
+                        <span className="font-mono font-semibold">{calf.tagNumber}</span>
+                        {calf.nickname && <span className="text-muted-foreground ml-2">({calf.nickname})</span>}
+                        <span className="text-xs text-muted-foreground ml-2">born {formatDate(calf.dateOfBirth)}</span>
+                      </span>
+                      <Badge variant="outline" className="text-xs">{`${ageStr} — wean soon`}</Badge>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
         </Card>
 
-        {/* Alerts */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -245,9 +220,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             {alertCows.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                No breeding alerts at this time.
-              </p>
+              <p className="text-sm text-muted-foreground py-4 text-center">No breeding alerts at this time.</p>
             ) : (
               <>
                 <p className="text-sm text-muted-foreground mb-3">
@@ -255,18 +228,12 @@ export default async function DashboardPage() {
                 </p>
                 <div className="space-y-2">
                   {alertCows.map((cow) => (
-                    <Link
-                      key={cow.tagNumber}
-                      href={`/cattle/${cow.tagNumber}`}
-                      className="flex items-center justify-between rounded border px-3 py-2 hover:bg-muted transition-colors"
-                    >
+                    <Link key={cow.tagNumber} href={`/cattle/${cow.tagNumber}`} className="flex items-center justify-between rounded border px-3 py-2 hover:bg-muted transition-colors">
                       <span>
                         <span className="font-mono font-semibold">{cow.tagNumber}</span>
                         {cow.nickname && <span className="text-muted-foreground ml-2">({cow.nickname})</span>}
                       </span>
-                        <Badge variant="warning" className="text-xs">
-                        {formatAgeWithMonths(cow.dateOfBirth)} old
-                      </Badge>
+                      <Badge variant="warning" className="text-xs">{formatAgeWithMonths(cow.dateOfBirth)} old</Badge>
                     </Link>
                   ))}
                 </div>

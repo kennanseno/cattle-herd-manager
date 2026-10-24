@@ -1,146 +1,115 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+"use client";
 
-interface SessionMetadata {
-  issuedAt: number;
-  expiresAt: number;
-}
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {
+  parseSessionMetadata,
+  SESSION_METADATA_COOKIE,
+  SESSION_WARNING_TIME_MS,
+} from "@/lib/session-expiry";
 
 interface UseSessionExpiryReturn {
-  isExpired: boolean;
   isExpiring: boolean;
   timeLeft: number | null;
   handleContinue: () => Promise<void>;
   handleLogout: () => Promise<void>;
 }
 
-const SESSION_METADATA_COOKIE = "chm_session_meta";
-const WARNING_TIME_MS = 2 * 60 * 1000; // Show warning 2 minutes before expiry
+function getSessionMetadata() {
+  const cookie = document.cookie
+    .split("; ")
+    .find((item) => item.startsWith(`${SESSION_METADATA_COOKIE}=`));
+  return parseSessionMetadata(cookie?.slice(SESSION_METADATA_COOKIE.length + 1));
+}
 
-/**
- * Hook to manage session expiration and prompt user to extend or logout.
- * Reads session metadata from cookie and tracks time until expiration.
- */
+function getLoginUrl(expired: boolean) {
+  const current = `${window.location.pathname}${window.location.search}`;
+  const params = new URLSearchParams();
+  if (expired) params.set("expired", "true");
+  if (current.startsWith("/") && !current.startsWith("/login")) {
+    params.set("from", current);
+  }
+  return `/login${params.size ? `?${params.toString()}` : ""}`;
+}
+
 export function useSessionExpiry(): UseSessionExpiryReturn {
   const router = useRouter();
-  const [isExpired, setIsExpired] = useState(false);
   const [isExpiring, setIsExpiring] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const warningShownRef = useRef(false);
+  const expiringRef = useRef(false);
+  const expiryRequestRef = useRef(false);
 
-  const getSessionMetadata = useCallback((): SessionMetadata | null => {
-    if (typeof document === "undefined") return null;
-    
-    const cookies = document.cookie.split(";");
-    for (const cookie of cookies) {
-      const [name, value] = cookie.trim().split("=");
-      if (name === SESSION_METADATA_COOKIE) {
-        try {
-          return JSON.parse(decodeURIComponent(value));
-        } catch {
-          return null;
-        }
+  const expireSession = useCallback(async () => {
+    if (expiryRequestRef.current) return;
+    expiryRequestRef.current = true;
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) {
+        toast.error("Your session expired, but we couldn't end it cleanly. Please sign in again.");
       }
+    } catch {
+      toast.error("Your session expired. Please sign in again.");
+    } finally {
+      router.replace(getLoginUrl(true));
     }
-    return null;
-  }, []);
+  }, [router]);
 
   const handleContinue = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/refresh", { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        // Update cookie with new expiration time
-        const metadata: SessionMetadata = {
-          issuedAt: Date.now(),
-          expiresAt: data.expiresAt,
-        };
-        document.cookie = `${SESSION_METADATA_COOKIE}=${encodeURIComponent(JSON.stringify(metadata))}; path=/`;
-        setIsExpiring(false);
-        setIsExpired(false);
-        warningShownRef.current = false;
-      } else {
-        // Refresh failed, redirect to login
-        router.push("/login");
+      const response = await fetch("/api/auth/refresh", { method: "POST" });
+      if (!response.ok) {
+        toast.error("Your session could not be renewed. Please log in again.");
+        await expireSession();
+        return;
       }
-    } catch (error) {
-      console.error("Failed to refresh session:", error);
-      router.push("/login");
+      setIsExpiring(false);
+      expiringRef.current = false;
+      setTimeLeft(null);
+    } catch {
+      toast.error("We couldn't reach the session service. Please log in again.");
+      await expireSession();
     }
-  }, [router]);
+  }, [expireSession]);
 
   const handleLogout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/login");
-    } catch (error) {
-      console.error("Failed to logout:", error);
-      router.push("/login");
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) {
+        toast.error("We couldn't end your session. Please try again.");
+        return;
+      }
+      router.replace("/login");
+    } catch {
+      toast.error("We couldn't reach the session service. Please try again.");
     }
   }, [router]);
 
-  // Check session expiration periodically
   useEffect(() => {
-    const check = () => {
+    const checkSession = () => {
       const metadata = getSessionMetadata();
-      
-      if (!metadata) {
-        // No session, likely expired
-        setIsExpired(true);
+      if (!metadata) return;
+
+      const remaining = metadata.expiresAt - Date.now();
+      if (remaining <= 0) {
         setIsExpiring(false);
         setTimeLeft(null);
+        void expireSession();
         return;
       }
 
-      const now = Date.now();
-      const remaining = metadata.expiresAt - now;
-
-      if (remaining <= 0) {
-        // Session expired
-        setIsExpired(true);
-        setIsExpiring(false);
-        setTimeLeft(null);
-      } else if (remaining <= WARNING_TIME_MS) {
-        // Session expiring soon
-        setIsExpiring(true);
-        setIsExpired(false);
-        setTimeLeft(remaining);
-      } else {
-        // Session still valid
-        setIsExpired(false);
-        setIsExpiring(false);
-        setTimeLeft(null);
+      const shouldWarn = remaining <= SESSION_WARNING_TIME_MS;
+      if (shouldWarn !== expiringRef.current) {
+        expiringRef.current = shouldWarn;
+        setIsExpiring(shouldWarn);
       }
+      setTimeLeft(shouldWarn ? remaining : null);
     };
 
-    check();
-    checkIntervalRef.current = setInterval(check, 10000); // Check every 10 seconds
+    checkSession();
+    const interval = window.setInterval(checkSession, 1000);
+    return () => window.clearInterval(interval);
+  }, [expireSession]);
 
-    return () => {
-      if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
-    };
-  }, [getSessionMetadata]);
-
-  // Redirect to login if expired
-  useEffect(() => {
-    if (isExpired) {
-      // Preserve the current location so the user returns here after logging
-      // back in (the login page reads the `from` query param).
-      const current = window.location.pathname + window.location.search;
-      const params = new URLSearchParams({ expired: "true" });
-      if (current && current.startsWith("/") && !current.startsWith("/login")) {
-        params.set("from", current);
-      }
-      router.push(`/login?${params.toString()}`);
-    }
-  }, [isExpired, router]);
-
-  return {
-    isExpired,
-    isExpiring,
-    timeLeft,
-    handleContinue,
-    handleLogout,
-  };
+  return { isExpiring, timeLeft, handleContinue, handleLogout };
 }

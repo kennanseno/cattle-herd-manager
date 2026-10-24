@@ -19,7 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import type { Cattle, BreedingRecord } from "@/types"
-import { calcCalvingDate, calcBreedDate, formatDate } from "@/lib/utils"
+import { calcCalvingDate, calcBreedDate, formatDate, todayISO } from "@/lib/utils"
 
 const schema = z.object({
   cowTagNumber: z.string().min(1, "Cow is required"),
@@ -64,8 +64,8 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
     defaultValues: {
       cowTagNumber: "",
       sireTagNumber: "",
-      breedDate: "",
-      breedDateTo: "",
+      breedDate: todayISO(),
+      breedDateTo: todayISO(),
       status: "pending",
       calfTagNumber: "",
       notes: "",
@@ -79,8 +79,8 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
       reset({
         cowTagNumber: record?.cowTagNumber || "",
         sireTagNumber: record?.sireTagNumber || "",
-        breedDate: record?.breedDate || "",
-        breedDateTo: record?.breedDateTo || "",
+        breedDate: record?.breedDate || todayISO(),
+        breedDateTo: record?.breedDateTo || todayISO(),
         actualCalvingDate: record?.actualCalvingDate || "",
         status: record?.status || "pending",
         calfTagNumber: record?.calfTagNumber || "",
@@ -97,7 +97,7 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
 
   function handleRangeModeToggle(checked: boolean) {
     setRangeMode(checked)
-    if (!checked) setValue("breedDateTo", "")
+    setValue("breedDateTo", checked ? (breedDateTo || todayISO()) : "")
   }
 
   async function onSubmit(values: FormValues) {
@@ -298,5 +298,4 @@ export function BreedingForm({ open, onOpenChange, record, allCattle, onSuccess 
     </Dialog>
   )
 }
-
 

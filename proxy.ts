@@ -1,33 +1,160 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AUTH_COOKIE, sessionToken, timingSafeEqual } from "@/lib/auth";
+import { getSupabasePublicConfig } from "@/lib/supabase/env";
+import {
+  createSessionMetadata,
+  parseSessionMetadata,
+  SESSION_METADATA_COOKIE,
+  SESSION_METADATA_MAX_AGE_SECONDS,
+  serializeSessionMetadata,
+} from "@/lib/session-expiry";
 
-// Server-side password gate. Runs before any route is rendered, so unauthenticated
-// requests can never reach a page or API. Disabled when APP_PASSWORD is unset
-// (e.g. local development), matching the storage backend's opt-in pattern.
+const publicPaths = new Set([
+  "/",
+  "/login",
+  "/register",
+  "/icon.svg",
+  "/apple-icon",
+  "/opengraph-image",
+]);
+const sessionApiPaths = new Set(["/api/auth/logout", "/api/auth/refresh"]);
+const protectedPagePaths = new Set([
+  "/dashboard",
+  "/cattle",
+  "/breeding",
+  "/health",
+  "/finances",
+  "/settings",
+]);
+
+function isTenantDataApi(pathname: string): boolean {
+  return pathname === "/api/auth/delete-account" ||
+    /^\/api\/(cattle(?:\/[^/]+)?|cattle\/[^/]+\/pdf-exports|breeding(?:\/[^/]+)?|health(?:\/[^/]+)?|finances(?:\/[^/]+)?|settings)$/.test(pathname);
+}
+
+function copyCookies(from: NextResponse, to: NextResponse) {
+  for (const cookie of from.cookies.getAll()) {
+    to.cookies.set(cookie);
+  }
+  return to;
+}
+
 export async function proxy(request: NextRequest) {
-  const password = process.env.APP_PASSWORD;
-  if (!password) return NextResponse.next();
+  const { pathname } = request.nextUrl;
 
-  const cookie = request.cookies.get(AUTH_COOKIE)?.value;
-  if (cookie) {
-    const expected = await sessionToken(password);
-    if (timingSafeEqual(cookie, expected)) return NextResponse.next();
+  if (publicPaths.has(pathname)) {
+    return NextResponse.next();
   }
 
-  // Not authenticated.
-  if (request.nextUrl.pathname.startsWith("/api")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (sessionApiPaths.has(pathname)) {
+    return NextResponse.next();
   }
 
-  const url = request.nextUrl.clone();
-  url.pathname = "/login";
-  url.searchParams.set("from", request.nextUrl.pathname);
-  return NextResponse.redirect(url);
+  if (pathname.startsWith("/api/") && !isTenantDataApi(pathname)) {
+    return NextResponse.json(
+      { error: "This API is unavailable until its storage is scoped to the signed-in farm." },
+      { status: 403 },
+    );
+  }
+
+  const config = getSupabasePublicConfig();
+  if (!config) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    return NextResponse.redirect(loginUrl);
+  }
+
+  let response = NextResponse.next({ request });
+  const supabase = createServerClient(config.url, config.publishableKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+        response = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+
+  const sessionMetadata = parseSessionMetadata(
+    request.cookies.get(SESSION_METADATA_COOKIE)?.value,
+  );
+  if (sessionMetadata && sessionMetadata.expiresAt <= Date.now()) {
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) {
+      console.error("[auth/session-expiry] Supabase sign-out failed:", signOutError.message);
+    }
+
+    const expiredResponse = pathname.startsWith("/api/")
+      ? NextResponse.json({ error: "Your session has expired. Please log in again." }, { status: 401 })
+      : (() => {
+          const loginUrl = request.nextUrl.clone();
+          loginUrl.pathname = "/login";
+          loginUrl.search = "";
+          loginUrl.searchParams.set("expired", "true");
+          loginUrl.searchParams.set("from", `${pathname}${request.nextUrl.search}`);
+          return NextResponse.redirect(loginUrl);
+        })();
+    const redirectResponse = copyCookies(response, expiredResponse);
+    redirectResponse.cookies.set(SESSION_METADATA_COOKIE, "", {
+      maxAge: 0,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+    return redirectResponse;
+  }
+
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.searchParams.set("from", pathname);
+    return copyCookies(response, NextResponse.redirect(loginUrl));
+  }
+
+  if (!sessionMetadata) {
+    response.cookies.set(
+      SESSION_METADATA_COOKIE,
+      serializeSessionMetadata(createSessionMetadata()),
+      {
+        httpOnly: false,
+        maxAge: SESSION_METADATA_MAX_AGE_SECONDS,
+        path: "/",
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      },
+    );
+  }
+
+  if (pathname === "/farm") {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = "/dashboard";
+    dashboardUrl.search = "";
+    return copyCookies(response, NextResponse.redirect(dashboardUrl));
+  }
+
+  if (
+    !pathname.startsWith("/api/") &&
+    !protectedPagePaths.has(pathname) &&
+    !/^\/cattle\/[^/]+$/.test(pathname)
+  ) {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = "/dashboard";
+    dashboardUrl.search = "";
+    return copyCookies(response, NextResponse.redirect(dashboardUrl));
+  }
+
+  return response;
 }
 
 export const config = {
-  // Run on everything except the login page, the auth endpoints, Next.js
-  // internals and the favicon (so the login screen can load its assets).
-  matcher: ["/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
