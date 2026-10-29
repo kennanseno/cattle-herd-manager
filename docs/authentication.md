@@ -4,8 +4,8 @@
 
 The app uses Supabase Auth. Its built-in registration and login forms use
 email/password credentials; provider configuration and account lifecycle are
-managed in the Supabase project. The app does not use the former
-deployment-wide `APP_PASSWORD` gate.
+managed in the Supabase project. Older deployment-wide credential gates and
+retired custom auth flows are not part of the current application.
 
 Set `NEXT_PUBLIC_SUPABASE_URL` and either
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` in
@@ -69,6 +69,5 @@ Supabase migration before using the control.
 5. If login fails, confirm the account exists in Supabase Auth and that the
    app points at the same Supabase project.
 
-The app requires Node.js 20 or later. `APP_PASSWORD`, the legacy `chm_auth`
-cookie, and the retired password/HMAC login are not part of the current auth
-flow.
+The app requires Node.js 20 or later. Older auth artifacts from previous
+deployment setups are not part of the current flow.
